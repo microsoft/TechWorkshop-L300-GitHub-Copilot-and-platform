@@ -1,0 +1,18 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/Azure/azure-dev/main/schemas/v1.0/azure.yaml.json
+
+name: techworkshop-l300-github-copilot-and-platform
+metadata:
+    template: azd-init@1.21.3
+services:
+    src:
+        project: src
+        host: containerapp
+        language: dotnet
+        docker:
+            path: Dockerfile
+            registry: zavaacrdev20251202.azurecr.io
+resources:
+    src:
+        type: host.containerapp
+        port: 80
+        name: zava-web
