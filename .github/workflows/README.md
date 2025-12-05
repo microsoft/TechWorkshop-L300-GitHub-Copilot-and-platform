@@ -6,20 +6,24 @@ Configure these in **Settings → Secrets and variables → Actions → Secrets*
 
 | Secret | Description |
 |--------|-------------|
-| `AZURE_CREDENTIALS` | Service principal JSON for Azure login (see below) |
+| `AZURE_CLIENT_ID` | Service principal Application (client) ID |
+| `AZURE_TENANT_ID` | Azure AD tenant ID |
+| `AZURE_SUBSCRIPTION_ID` | Azure subscription ID |
 | `ACR_USERNAME` | Azure Container Registry admin username |
 | `ACR_PASSWORD` | Azure Container Registry admin password |
 
-### Create AZURE_CREDENTIALS
+### Setup Federated Credentials for GitHub Actions
 
-```bash
-az ad sp create-for-rbac --name "github-actions-sp" \
-  --role contributor \
-  --scopes /subscriptions/{subscription-id}/resourceGroups/{resource-group} \
-  --sdk-auth
-```
-
-Copy the entire JSON output as the secret value.
+1. Go to Azure Portal → Microsoft Entra ID → App registrations
+2. Find `github-actions-sp` and click on it
+3. Go to **Certificates & secrets** → **Federated credentials** → **Add credential**
+4. Select **GitHub Actions deploying Azure resources**
+5. Fill in:
+   - **Organization**: `VaasInc`
+   - **Repository**: `TechWorkshop-L300-GitHub-Copilot-and-platform`
+   - **Entity type**: `Branch`
+   - **Branch**: `main` (repeat for `dev` if needed)
+   - **Name**: `github-actions-main`
 
 ### Get ACR Credentials
 
