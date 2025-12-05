@@ -11,10 +11,10 @@ on:
   workflow_dispatch:
 
 env:
-  ACR_NAME: ${{ vars.ACR_NAME || 'zavastoredevacrwadq' }}
+  ACR_NAME: zavastoredevacrwadq
   IMAGE_NAME: zava-storefront
-  RESOURCE_GROUP: ${{ vars.RESOURCE_GROUP || 'rg-zavastore-dev-westus3' }}
-  APP_NAME: ${{ vars.APP_NAME || 'zavastore-dev-web' }}
+  RESOURCE_GROUP: rg-zavastore-dev-westus3
+  APP_NAME: zavastore-dev-web
 
 jobs:
   build:
@@ -31,9 +31,9 @@ jobs:
       - name: Build and push to ACR
         run: |
           az acr build \
-            --registry ${{ env.ACR_NAME }} \
-            --image ${{ env.IMAGE_NAME }}:${{ github.sha }} \
-            --image ${{ env.IMAGE_NAME }}:latest \
+            --registry $ACR_NAME \
+            --image $IMAGE_NAME:${{ github.sha }} \
+            --image $IMAGE_NAME:latest \
             --file ./infra/Dockerfile \
             ./src
 
@@ -51,5 +51,5 @@ jobs:
       - name: Restart App Service
         run: |
           az webapp restart \
-            --name ${{ env.APP_NAME }} \
-            --resource-group ${{ env.RESOURCE_GROUP }}
+            --name $APP_NAME \
+            --resource-group $RESOURCE_GROUP
