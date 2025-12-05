@@ -1,0 +1,54 @@
+name: Build and Deploy to Azure
+
+on:
+  push:
+    branches: [main, dev]
+    paths: ['src/**']
+  workflow_dispatch:
+
+permissions:
+  id-token: write
+  contents: read
+
+env:
+  DOCKER_IMAGE_NAME: zava-storefront
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Azure Login (OIDC)
+        uses: azure/login@v2
+        with:
+          client-id: ${{ vars.AZURE_CLIENT_ID }}
+          tenant-id: ${{ vars.AZURE_TENANT_ID }}
+          subscription-id: ${{ vars.AZURE_SUBSCRIPTION_ID }}
+
+      - name: Build and push container to ACR
+        run: |
+          az acr build \
+            --registry ${{ vars.ACR_NAME }} \
+            --image ${{ env.DOCKER_IMAGE_NAME }}:${{ github.sha }} \
+            --image ${{ env.DOCKER_IMAGE_NAME }}:latest \
+            --file src/Dockerfile \
+            src/
+
+      - name: Deploy to App Service
+        run: |
+          az webapp config container set \
+            --name ${{ vars.APP_SERVICE_NAME }} \
+            --resource-group ${{ vars.RESOURCE_GROUP_NAME }} \
+            --docker-custom-image-name ${{ vars.ACR_LOGIN_SERVER }}/${{ env.DOCKER_IMAGE_NAME }}:${{ github.sha }} \
+            --docker-registry-server-url https://${{ vars.ACR_LOGIN_SERVER }}
+          
+          az webapp restart \
+            --name ${{ vars.APP_SERVICE_NAME }} \
+            --resource-group ${{ vars.RESOURCE_GROUP_NAME }}
+
+      - name: Azure Logout
+        if: always()
+        run: az logout
