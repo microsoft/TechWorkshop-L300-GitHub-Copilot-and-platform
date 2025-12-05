@@ -3,10 +3,9 @@ name: Deploy to Azure
 
 on:
   push:
-    branches: [main]
-    paths: [ 'src/**' ]
+    branches: [main, dev]
   pull_request:
-    branches: [ '*' ]
+    branches: [main]
   workflow_dispatch:
 
 env:
