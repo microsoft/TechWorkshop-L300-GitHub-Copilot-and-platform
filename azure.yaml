@@ -1,0 +1,25 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/Azure/azure-dev/main/schemas/v1.0/azure.yaml.json
+
+name: zavastorefrontapp
+metadata:
+  template: zavastorefrontapp
+
+services:
+  web:
+    project: ./src
+    language: dotnet
+    host: appservice
+
+infra:
+  provider: bicep
+  path: infra
+  module: main
+
+hooks:
+  postprovision:
+    posix:
+      shell: sh
+      run: echo "Infrastructure provisioned successfully"
+    windows:
+      shell: pwsh
+      run: Write-Host "Infrastructure provisioned successfully"
