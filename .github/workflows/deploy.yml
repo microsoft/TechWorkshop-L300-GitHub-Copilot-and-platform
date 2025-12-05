@@ -11,10 +11,10 @@ on:
   workflow_dispatch:
 
 env:
-  ACR_NAME: ${{ vars.ACR_NAME }}
+  ACR_NAME: ${{ vars.ACR_NAME || 'zavastoredevacrwadq' }}
   IMAGE_NAME: zava-storefront
-  RESOURCE_GROUP: ${{ vars.RESOURCE_GROUP }}
-  APP_NAME: ${{ vars.APP_NAME }}
+  RESOURCE_GROUP: ${{ vars.RESOURCE_GROUP || 'rg-zavastore-dev-westus3' }}
+  APP_NAME: ${{ vars.APP_NAME || 'zavastore-dev-web' }}
 
 jobs:
   build:
