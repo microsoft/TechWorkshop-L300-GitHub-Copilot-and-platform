@@ -1,0 +1,25 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/Azure/azure-dev/main/schemas/v1.0/azure.yaml.json
+
+# ==============================================================================
+# Azure Developer CLI Configuration for ZavaStorefront
+# ==============================================================================
+
+name: zavastore
+metadata:
+  template: ZavaStorefront@1.0.0
+
+# Use custom Bicep infrastructure
+infra:
+  provider: bicep
+  path: infra
+  module: main
+
+# Service definitions
+services:
+  web:
+    project: src
+    host: appservice
+    language: dotnet
+    docker:
+      path: Dockerfile
+      context: .
