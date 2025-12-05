@@ -20,6 +20,12 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v4
 
+    - name: Debug repo contents
+      run: |
+        echo "Workspace: $GITHUB_WORKSPACE"
+        ls -la
+        ls -la src || true
+
     - name: Log in to Azure
       uses: azure/login@v2
       with:
@@ -30,8 +36,8 @@ jobs:
         az acr build --registry ${{ env.REGISTRY_NAME }} \
                      --image ${{ env.IMAGE_NAME }}:${{ github.sha }} \
                      --image ${{ env.IMAGE_NAME }}:latest \
-                     --file ./src/Dockerfile \
-                     ./src
+                     --file "$GITHUB_WORKSPACE/src/Dockerfile" \
+                     "$GITHUB_WORKSPACE/src"
 
     - name: Deploy to Azure App Service
       uses: azure/webapps-deploy@v3
