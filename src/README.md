@@ -183,7 +183,7 @@ az acr build \
 
 #### Option 3: GitHub Actions CI/CD
 
-The repository includes a GitHub Actions workflow (`.github/workflows/build-deploy.yml`) that:
+The repository includes a GitHub Actions workflow (`.github/workflows/deploy.yml`) that:
 1. Builds container images using ACR Tasks (cloud-based, no local Docker)
 2. Deploys to Azure Web App for Containers
 3. Supports manual infrastructure provisioning via workflow dispatch
