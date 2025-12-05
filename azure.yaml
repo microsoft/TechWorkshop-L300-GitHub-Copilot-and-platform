@@ -1,0 +1,95 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/Azure/azure-dev/main/schemas/v1.0/azure.yaml.json
+
+name: zavastore
+metadata:
+  template: zavastore-web-app
+
+# Azure Developer CLI (azd) configuration
+# Documentation: https://learn.microsoft.com/azure/developer/azure-developer-cli/azd-schema
+infra:
+  provider: bicep
+  path: infra
+  module: main
+
+# Services to deploy
+services:
+  web:
+    project: ./src
+    language: csharp
+    host: appservice
+
+# Hooks for deployment workflow (Windows-compatible using PowerShell)
+hooks:
+  # Pre-provision hook: Validate prerequisites
+  preprovision:
+    windows:
+      shell: pwsh
+      run: |
+        Write-Host "Validating Azure CLI login..."
+        $account = az account show 2>$null
+        if (-not $account) {
+          Write-Error "Please run 'az login' first"
+          exit 1
+        }
+        Write-Host "Prerequisites validated."
+    posix:
+      shell: sh
+      run: |
+        echo "Validating Azure CLI login..."
+        az account show || (echo "Please run 'az login' first" && exit 1)
+        echo "Prerequisites validated."
+
+  # Post-provision hook: Build and push container image to ACR
+  postprovision:
+    windows:
+      shell: pwsh
+      run: |
+        Write-Host "Building and pushing container image to ACR..."
+        Write-Host "ACR Name: $env:AZURE_CONTAINER_REGISTRY_NAME"
+        Write-Host "Resource Group: $env:AZURE_RESOURCE_GROUP"
+        $timestamp = Get-Date -Format "yyyyMMddHHmmss"
+        az acr build `
+          --registry $env:AZURE_CONTAINER_REGISTRY_NAME `
+          --resource-group $env:AZURE_RESOURCE_GROUP `
+          --image "zavastore:$env:AZURE_ENV_NAME-$timestamp" `
+          --image "zavastore:latest" `
+          --file ./src/Dockerfile `
+          ./src
+        Write-Host "Container image built and pushed successfully."
+    posix:
+      shell: sh
+      run: |
+        echo "Building and pushing container image to ACR..."
+        echo "ACR Name: ${AZURE_CONTAINER_REGISTRY_NAME}"
+        echo "Resource Group: ${AZURE_RESOURCE_GROUP}"
+        az acr build \
+          --registry ${AZURE_CONTAINER_REGISTRY_NAME} \
+          --resource-group ${AZURE_RESOURCE_GROUP} \
+          --image zavastore:${AZURE_ENV_NAME}-$(date +%Y%m%d%H%M%S) \
+          --image zavastore:latest \
+          --file ./src/Dockerfile \
+          ./src
+        echo "Container image built and pushed successfully."
+
+  # Post-deploy hook: Update web app with new image
+  postdeploy:
+    windows:
+      shell: pwsh
+      run: |
+        Write-Host "Updating Web App container configuration..."
+        az webapp config container set `
+          --name $env:AZURE_WEB_APP_NAME `
+          --resource-group $env:AZURE_RESOURCE_GROUP `
+          --docker-custom-image-name "$env:AZURE_CONTAINER_REGISTRY_ENDPOINT/zavastore:latest" `
+          --docker-registry-server-url "https://$env:AZURE_CONTAINER_REGISTRY_ENDPOINT"
+        Write-Host "Web App updated with latest container image."
+    posix:
+      shell: sh
+      run: |
+        echo "Updating Web App container configuration..."
+        az webapp config container set \
+          --name ${AZURE_WEB_APP_NAME} \
+          --resource-group ${AZURE_RESOURCE_GROUP} \
+          --docker-custom-image-name ${AZURE_CONTAINER_REGISTRY_ENDPOINT}/zavastore:latest \
+          --docker-registry-server-url https://${AZURE_CONTAINER_REGISTRY_ENDPOINT}
+        echo "Web App updated with latest container image."
