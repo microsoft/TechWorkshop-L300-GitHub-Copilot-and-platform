@@ -35,7 +35,8 @@ jobs:
             --registry ${{ env.ACR_NAME }} \
             --image zavastorefront:${{ github.sha }} \
             --image zavastorefront:latest \
-            ./src
+            --file src/Dockerfile \
+            src
 
       - name: Deploy to App Service
         run: |
