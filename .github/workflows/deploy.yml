@@ -3,16 +3,21 @@ name: Build and Deploy to Azure
 on:
   push:
     branches: [main]
+    paths:
+      - 'src/**'
+      - 'infra/Dockerfile'
+  pull_request:
+    branches: [main]
   workflow_dispatch:
 
 env:
-  ACR_NAME: zavastoredevacrwadq
+  ACR_NAME: ${{ vars.ACR_NAME }}
   IMAGE_NAME: zava-storefront
-  RESOURCE_GROUP: rg-zavastore-dev-westus3
-  APP_NAME: zavastore-dev-web
+  RESOURCE_GROUP: ${{ vars.RESOURCE_GROUP }}
+  APP_NAME: ${{ vars.APP_NAME }}
 
 jobs:
-  build-and-deploy:
+  build:
     runs-on: ubuntu-latest
 
     steps:
@@ -31,6 +36,17 @@ jobs:
             --image ${{ env.IMAGE_NAME }}:latest \
             --file ./infra/Dockerfile \
             ./src
+
+  deploy:
+    runs-on: ubuntu-latest
+    needs: build
+    if: github.event_name != 'pull_request'
+
+    steps:
+      - name: Azure Login
+        uses: azure/login@v2
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
 
       - name: Restart App Service
         run: |
