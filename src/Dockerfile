@@ -22,15 +22,8 @@ RUN dotnet publish "ZavaStorefront.csproj" -c Release -o /app/publish /p:UseAppH
 FROM mcr.microsoft.com/dotnet/aspnet:6.0 AS runtime
 WORKDIR /app
 
-# Create non-root user for security
-RUN groupadd -r appgroup && useradd -r -g appgroup appuser
-
 # Copy published application
 COPY --from=build /app/publish .
-
-# Set permissions and switch to non-root user
-RUN chown -R appuser:appgroup /app
-USER appuser
 
 # Expose port 8080 (Azure App Service default)
 EXPOSE 8080
@@ -38,10 +31,6 @@ EXPOSE 8080
 # Set environment variables
 ENV ASPNETCORE_URLS=http://+:8080
 ENV ASPNETCORE_ENVIRONMENT=Production
-
-# Health check
-HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
-    CMD curl --fail http://localhost:8080/health || exit 1
 
 # Start the application
 ENTRYPOINT ["dotnet", "ZavaStorefront.dll"]
