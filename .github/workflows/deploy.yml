@@ -2,7 +2,7 @@ name: Build and Deploy to Azure
 
 on:
   push:
-    branches: [main]
+    branches: [main, dev]
     paths:
       - 'src/**'
       - 'infra/Dockerfile'
