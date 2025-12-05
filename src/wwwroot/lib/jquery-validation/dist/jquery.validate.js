@@ -684,7 +684,18 @@ $.extend( $.validator, {
 		},
 
 		clean: function( selector ) {
-			return $( selector )[ 0 ];
+			// Only accept DOM elements (do not allow string selectors)
+			if (
+				selector &&
+				(
+					(typeof Element !== "undefined" && selector instanceof Element) ||
+					selector.nodeType === 1 ||
+					selector.nodeType === 9
+				)
+			) {
+				return selector;
+			}
+			return undefined;
 		},
 
 		errors: function() {
@@ -1062,12 +1073,28 @@ $.extend( $.validator, {
 		},
 
 		validationTargetFor: function( element ) {
-
+			// XSS hardening: only allow DOM Elements, never selector strings
 			// If radio/checkbox, validate first element in group instead
 			if ( this.checkable( element ) ) {
 				element = this.findByName( element.name );
 			}
 
+			// If element is an array-like (as returned by findByName) or jQuery collection, get first DOM element
+			if (element instanceof $ || Array.isArray(element)) {
+				element = element[0];
+			}
+			// Only proceed if element is a DOM node (type 1 or 9)
+			if (
+				!element ||
+				!(
+					(typeof Element !== "undefined" && element instanceof Element) ||
+					element.nodeType === 1 ||
+					element.nodeType === 9
+				)
+			) {
+				// Defensive: bail out if not a DOM node
+				return undefined;
+			}
 			// Always apply ignore filter
 			return $( element ).not( this.settings.ignore )[ 0 ];
 		},
