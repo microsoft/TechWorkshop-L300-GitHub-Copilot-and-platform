@@ -1,0 +1,32 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/Azure/azure-dev/main/schemas/v1.0/azure.yaml.json
+
+name: zavastorefront
+metadata:
+  template: zavastorefront@0.0.1
+
+# Azure Developer CLI hooks for custom workflows
+hooks:
+  # Pre-provision hook to validate environment
+  preprovision:
+    shell: pwsh
+    run: |
+      Write-Host "Validating environment configuration..."
+      if (-not $env:AZURE_ENV_NAME) {
+        Write-Error "AZURE_ENV_NAME is not set. Run 'azd env new <name>' first."
+        exit 1
+      }
+      Write-Host "Environment: $env:AZURE_ENV_NAME"
+      Write-Host "Location: westus3"
+
+# Infrastructure configuration
+infra:
+  provider: bicep
+  path: ./infra
+  module: main
+
+# Service definitions
+services:
+  web:
+    project: ./src
+    language: csharp
+    host: appservice

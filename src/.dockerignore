@@ -1,0 +1,49 @@
+# Docker ignore file for ZavaStorefront
+# Exclude files and directories that should not be copied to the Docker build context
+
+# Git
+.git
+.gitignore
+
+# IDE
+.vs
+.vscode
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+
+# Build outputs
+[Bb]in/
+[Oo]bj/
+[Dd]ebug/
+[Rr]elease/
+
+# NuGet
+*.nupkg
+**/packages/*
+*.nuget.props
+*.nuget.targets
+
+# Test results
+[Tt]est[Rr]esult*/
+[Bb]uild[Ll]og.*
+
+# Misc
+*.log
+*.tmp
+*.temp
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# Infrastructure files
+../infra/
+
+# Documentation
+*.md
+!README.md
+
+# Docker
+**/Dockerfile*
+**/.dockerignore

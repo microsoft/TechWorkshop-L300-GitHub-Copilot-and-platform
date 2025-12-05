@@ -1,0 +1,7 @@
+<step title="Incoming Request" date="2025-12-05T20:51:51.934" instance="f8f925" url="/api/deployments/6e3667c6cd5ef7462fa8a30147484dbb0711d6b31764967910319" method="PUT" type="request" pid="831,1,89" Host="app-zavastorefront-qewgjp.scm.azurewebsites.net" User-Agent="GITHUBACTIONS_DeployWebAppToAzure_0e52ec596d595163a4f71b3485fd4dcf8714afcbabde1b6ce8c2df30d4ffbf9b" Authorization="Bea..." Content-Type="application/json; charset=utf-8" Content-Length="352" X-ARR-LOG-ID="ce4dc6d3-e28e-4a84-b6d9-620256a14352" CLIENT-IP="172.174.165.230:19520" X-SITE-DEPLOYMENT-ID="app-zavastorefront-qewgjp" WAS-DEFAULT-HOSTNAME="app-zavastorefront-qewgjp.scm.azurewebsites.net" X-Forwarded-Proto="https" X-AppService-Proto="https" X-Forwarded-TlsVersion="1.3" X-WAWS-Unencoded-URL="/api/deployments/6e3667c6cd5ef7462fa8a30147484dbb0711d6b31764967910319" X-Client-IP="172.174.165.230" X-Client-Port="19520" >
+  <step title="Cleanup Xml Logs" date="2025-12-05T20:51:51.944" /><!-- duration: 14ms -->
+  <step title="DeploymentService.Deploy(id)" date="2025-12-05T20:51:52.140" >
+    <step title="DeploymentService.Create(id)" date="2025-12-05T20:51:52.150" /><!-- duration: 1327ms -->
+  </step><!-- duration: 1347ms -->
+  <step title="Outgoing response" date="2025-12-05T20:51:53.497" type="response" statusCode="200" statusText="OK" /><!-- duration: 27ms -->
+</step><!-- duration: 1617ms -->

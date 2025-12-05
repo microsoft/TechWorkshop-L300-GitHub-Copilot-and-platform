@@ -1,0 +1,4 @@
+<step title="Incoming Request" date="2025-12-05T20:56:54.673" instance="f8f925" url="/dump" method="GET" type="request" pid="768,1,5" Host="app-zavastorefront-qewgjp.scm.azurewebsites.net" User-Agent="AZURECLI/2.81.0 (MSI)" Accept-Encoding="identity" Authorization="Bas..." x-ms-client-request-id="eb4f6b06-d21c-11f0-9459-04f0ee2c0ee2" X-ARR-LOG-ID="eb4f6b06-d21c-11f0-9459-04f0ee2c0ee2" CLIENT-IP="73.164.68.225:51972" X-SITE-DEPLOYMENT-ID="app-zavastorefront-qewgjp" WAS-DEFAULT-HOSTNAME="app-zavastorefront-qewgjp.scm.azurewebsites.net" X-Forwarded-Proto="https" X-AppService-Proto="https" X-Forwarded-TlsVersion="1.3" X-WAWS-Unencoded-URL="/dump" X-Client-IP="73.164.68.225" X-Client-Port="51972" >
+  <step title="Cleanup Xml Logs" date="2025-12-05T20:56:54.676" /><!-- duration: 5ms -->
+  <step title="Outgoing response" date="2025-12-05T20:56:54.964" type="response" statusCode="200" statusText="OK" /><!-- duration: 4ms -->
+</step><!-- duration: 298ms -->
