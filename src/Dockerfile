@@ -4,7 +4,7 @@
 # ============================================================================
 
 # Stage 1: Build
-FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
+FROM mcr.microsoft.com/dotnet/sdk:6.0 AS build
 WORKDIR /src
 
 # Copy project files and restore dependencies
@@ -22,7 +22,7 @@ FROM build AS publish
 RUN dotnet publish "ZavaStorefront.csproj" -c Release -o /app/publish /p:UseAppHost=false
 
 # Stage 3: Runtime
-FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS runtime
+FROM mcr.microsoft.com/dotnet/aspnet:6.0 AS runtime
 WORKDIR /app
 
 # Create non-root user for security
@@ -41,10 +41,6 @@ EXPOSE 8080
 
 # Switch to non-root user
 USER appuser
-
-# Health check
-HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
-    CMD curl -f http://localhost:8080/health || exit 1
 
 # Start the application
 ENTRYPOINT ["dotnet", "ZavaStorefront.dll"]
