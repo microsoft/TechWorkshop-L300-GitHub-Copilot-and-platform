@@ -1,0 +1,49 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/Azure/azure-dev/main/schemas/v1.0/azure.yaml.json
+
+name: zavastore
+metadata:
+  template: azd-init@1.22.0
+
+infra:
+  provider: bicep
+  path: infra
+  module: main
+
+services:
+  web:
+    project: ./src
+    host: appservice
+    language: dotnet
+
+hooks:
+  postprovision:
+    windows:
+      shell: pwsh
+      run: |
+        Write-Host "Building Docker image in ACR..."
+        $acrName = azd env get-value AZURE_CONTAINER_REGISTRY_NAME
+        az acr build --registry $acrName --image zava-storefront:latest --file ./infra/Dockerfile ./src
+        Write-Host "Docker image built and pushed to ACR!"
+    posix:
+      shell: sh
+      run: |
+        echo "Building Docker image in ACR..."
+        acrName=$(azd env get-value AZURE_CONTAINER_REGISTRY_NAME)
+        az acr build --registry $acrName --image zava-storefront:latest --file ./infra/Dockerfile ./src
+        echo "Docker image built and pushed to ACR!"
+  
+  postdeploy:
+    windows:
+      shell: pwsh
+      run: |
+        Write-Host "Restarting web app to pull new image..."
+        $rgName = azd env get-value AZURE_RESOURCE_GROUP
+        az webapp restart --name zavastore-dev-web --resource-group $rgName
+        Write-Host "Web app restarted!"
+    posix:
+      shell: sh
+      run: |
+        echo "Restarting web app to pull new image..."
+        rgName=$(azd env get-value AZURE_RESOURCE_GROUP)
+        az webapp restart --name zavastore-dev-web --resource-group $rgName
+        echo "Web app restarted!"
