@@ -1,0 +1,10 @@
+{
+  "containerRegistryRegistries": "cr",
+  "insightsComponents": "appi-",
+  "keyVaultVaults": "kv-",
+  "machineLearningServicesWorkspaces": "mlw-",
+  "operationalInsightsWorkspaces": "log-",
+  "storageStorageAccounts": "st",
+  "webServerFarms": "asp-",
+  "webSitesAppService": "app-"
+}

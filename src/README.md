@@ -116,3 +116,111 @@ The application includes structured logging for:
 - Checkout process
 
 Logs are written to console during development.
+
+---
+
+## Azure Deployment
+
+This application is configured for deployment to Azure using Azure Developer CLI (azd) and Bicep infrastructure as code.
+
+### Prerequisites
+
+- [Azure CLI](https://docs.microsoft.com/cli/azure/install-azure-cli)
+- [Azure Developer CLI (azd)](https://learn.microsoft.com/azure/developer/azure-developer-cli/install-azd)
+- Azure subscription with appropriate permissions
+
+### Architecture
+
+The infrastructure deploys the following resources in `westus3`:
+
+| Resource | Purpose | SKU |
+|----------|---------|-----|
+| Azure Container Registry | Container image storage | Basic |
+| App Service Plan | Linux hosting for containers | B1 |
+| Web App for Containers | Application hosting | - |
+| Application Insights | Application monitoring | - |
+| Log Analytics Workspace | Centralized logging | PerGB2018 |
+| Key Vault | Secrets management (AI Foundry) | Standard |
+| Storage Account | AI Foundry data storage | Standard_LRS |
+| AI Foundry (ML Workspace) | GPT-4 and Phi model access | Basic |
+
+### Deployment Workflow
+
+#### Option 1: Using Azure Developer CLI (Recommended)
+
+```bash
+# Login to Azure
+azd auth login
+
+# Initialize environment (first time only)
+azd init
+
+# Provision infrastructure and deploy application
+azd up
+```
+
+#### Option 2: Manual Bicep Deployment
+
+```bash
+# Login to Azure
+az login
+
+# Create resource group
+az group create --name rg-zavastore-dev-westus3 --location westus3
+
+# Deploy infrastructure
+az deployment group create \
+  --resource-group rg-zavastore-dev-westus3 \
+  --template-file infra/main.bicep \
+  --parameters infra/main.bicepparam
+
+# Build and push container image (no local Docker required)
+az acr build \
+  --registry <acr-name> \
+  --image zavastorefront:latest \
+  ./src
+```
+
+#### Option 3: GitHub Actions CI/CD
+
+The repository includes a GitHub Actions workflow (`.github/workflows/build-deploy.yml`) that:
+1. Builds container images using ACR Tasks (cloud-based, no local Docker)
+2. Deploys to Azure Web App for Containers
+3. Supports manual infrastructure provisioning via workflow dispatch
+
+**Required Secrets:**
+- `AZURE_CLIENT_ID` - Service principal client ID
+- `AZURE_TENANT_ID` - Azure AD tenant ID
+- `AZURE_SUBSCRIPTION_ID` - Azure subscription ID
+
+### Security Features
+
+- **Managed Identity**: Web App uses system-assigned managed identity
+- **RBAC-based ACR Access**: AcrPull role assignment (no passwords)
+- **HTTPS Only**: Enforced for all web traffic
+- **TLS 1.2 Minimum**: Modern encryption standards
+- **Key Vault RBAC**: Role-based access control for secrets
+
+### Estimated Monthly Costs (Dev Environment)
+
+| Resource | Estimated Cost |
+|----------|---------------|
+| ACR Basic | ~$5/month |
+| App Service B1 | ~$13/month |
+| Application Insights | ~$2-5/month |
+| Log Analytics | ~$2-5/month |
+| Key Vault | ~$0.03/10k ops |
+| Storage Account | ~$2/month |
+| AI Foundry | Pay-per-use |
+
+**Total**: ~$25-35/month (excluding AI usage)
+
+### Cleanup
+
+```bash
+# Using azd
+azd down
+
+# Or manually
+az group delete --name rg-zavastore-dev-westus3 --yes --no-wait
+```

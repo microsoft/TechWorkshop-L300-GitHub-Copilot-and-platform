@@ -1,0 +1,93 @@
+# =========================================================================
+# GitHub Actions Workflow - Build and Deploy ZavaStorefront
+# Builds container image using ACR Tasks (no local Docker required)
+# =========================================================================
+
+name: Build and Deploy ZavaStorefront
+
+on:
+  push:
+    branches: [main, dev]
+    paths:
+      - 'src/**'
+      - '.github/workflows/build-deploy.yml'
+  pull_request:
+    branches: [main]
+    paths:
+      - 'src/**'
+  workflow_dispatch:
+
+env:
+  AZURE_RESOURCE_GROUP: rg-zavastore-dev-westus3
+  ACR_NAME: crzavastore
+  IMAGE_NAME: zavastorefront
+  WEBAPP_NAME: app-zavastore-dev
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    environment: dev
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Azure Login (OIDC)
+        uses: azure/login@v2
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
+      - name: Get ACR Login Server
+        id: acr
+        run: |
+          ACR_LOGIN_SERVER=$(az acr show --name ${{ env.ACR_NAME }} --query loginServer --output tsv)
+          echo "login_server=$ACR_LOGIN_SERVER" >> $GITHUB_OUTPUT
+
+      - name: Build and Push Image to ACR (Cloud Build)
+        run: |
+          # Use ACR Tasks to build in the cloud - no local Docker required
+          az acr build \
+            --registry ${{ env.ACR_NAME }} \
+            --image ${{ env.IMAGE_NAME }}:${{ github.sha }} \
+            --image ${{ env.IMAGE_NAME }}:latest \
+            --file src/Dockerfile \
+            ./src
+
+      - name: Deploy to Azure Web App
+        uses: azure/webapps-deploy@v3
+        with:
+          app-name: ${{ env.WEBAPP_NAME }}
+          images: ${{ steps.acr.outputs.login_server }}/${{ env.IMAGE_NAME }}:${{ github.sha }}
+
+  provision:
+    runs-on: ubuntu-latest
+    if: github.event_name == 'workflow_dispatch'
+    environment: dev
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Azure Login (OIDC)
+        uses: azure/login@v2
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
+      - name: Setup Azure Developer CLI
+        uses: Azure/setup-azd@v1
+
+      - name: Provision Infrastructure
+        run: |
+          azd provision --no-prompt
+        env:
+          AZURE_ENV_NAME: dev
+          AZURE_LOCATION: westus3
+          AZURE_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}

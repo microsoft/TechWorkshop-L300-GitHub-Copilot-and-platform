@@ -1,0 +1,46 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/Azure/azure-dev/main/schemas/v1.0/azure.yaml.json
+
+name: zava-storefront
+metadata:
+  template: azd-init@1.0.0
+
+# Azure Developer CLI workflow configuration
+# See: https://learn.microsoft.com/azure/developer/azure-developer-cli/
+
+# Infrastructure configuration
+infra:
+  provider: bicep
+  path: ./infra
+  module: main
+
+# Services configuration
+services:
+  web:
+    project: ./src
+    language: dotnet
+    host: appservice
+    docker:
+      path: ./Dockerfile
+      context: ./src
+      port: 8080
+
+# Pipeline configuration for CI/CD
+pipeline:
+  provider: github
+
+# Hooks for custom scripts
+hooks:
+  # Post-provision hook to build and push container image
+  postprovision:
+    shell: pwsh
+    run: |
+      Write-Host "Building and pushing container image to ACR..."
+      $acrName = (azd env get-values | ConvertFrom-StringData).AZURE_CONTAINER_REGISTRY_NAME
+      $acrLoginServer = (azd env get-values | ConvertFrom-StringData).AZURE_CONTAINER_REGISTRY_LOGIN_SERVER
+      
+      if ($acrName) {
+        az acr build --registry $acrName --image zavastorefront:latest ./src
+        Write-Host "Container image pushed to $acrLoginServer/zavastorefront:latest"
+      } else {
+        Write-Host "ACR name not found. Skipping container build."
+      }
