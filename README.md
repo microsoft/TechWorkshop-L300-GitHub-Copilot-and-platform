@@ -1,6 +1,35 @@
-# Project
+# ZavaStorefront - Tech Workshop L300
 
-This lab guides you through a series of practical exercises focused on modernising Zava's business applications and databases by migrating everything to Azure, leveraging GitHub Enterprise, Copilot, and Azure services. Each exercise is designed to deliver hands-on experience in governance, automation, security, AI integration, and observability, ensuring Zava’s transition to Azure is robust, secure, and future-ready.
+This lab guides you through a series of practical exercises focused on modernising Zava's business applications and databases by migrating everything to Azure, leveraging GitHub Enterprise, Copilot, and Azure services. Each exercise is designed to deliver hands-on experience in governance, automation, security, AI integration, and observability, ensuring Zava's transition to Azure is robust, secure, and future-ready.
+
+## Quick Start
+
+### Prerequisites
+- [Azure CLI](https://learn.microsoft.com/cli/azure/install-azure-cli)
+- [Azure Developer CLI (azd)](https://learn.microsoft.com/azure/developer/azure-developer-cli/install-azd)
+- Git
+- Azure Subscription
+
+### Deploy Infrastructure
+
+```powershell
+# Login to Azure
+az login
+azd auth login
+
+# Provision Azure resources and deploy application
+azd up
+```
+
+See [Infrastructure Documentation](./infra/README.md) for detailed deployment instructions.
+
+## Project Structure
+
+- **`/src`** - ZavaStorefront .NET 6 ASP.NET Core MVC web application
+- **`/infra`** - Azure infrastructure as code (Bicep templates)
+- **`/docs`** - Workshop exercises and documentation
+- **`/media`** - Workshop media assets
+- **`azure.yaml`** - Azure Developer CLI configuration
 
 ## Contributing
 

@@ -1,0 +1,60 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/Azure/azure-dev/main/schemas/v1.0/azure.yaml.json
+
+name: zava-storefront
+metadata:
+  template: zava-storefront@0.0.1-beta
+
+services:
+  web:
+    project: ./src
+    language: dotnet
+    host: appservice
+    
+infra:
+  provider: bicep
+  path: infra
+  module: main
+
+hooks:
+  predeploy:
+    windows:
+      shell: pwsh
+      run: |
+        # Build and push Docker image to Azure Container Registry using ACR Tasks
+        Write-Host "Building container image in Azure Container Registry..."
+        Write-Host "Finding resource group..."
+        $rgName = az group list --query "[?starts_with(name, 'rg-')].name | [0]" -o tsv
+        if ([string]::IsNullOrEmpty($rgName)) {
+          throw "Could not find resource group. Please ensure infrastructure is provisioned."
+        }
+        Write-Host "Resource Group: $rgName"
+        $acrName = az acr list --resource-group $rgName --query "[0].name" -o tsv
+        if ([string]::IsNullOrEmpty($acrName)) {
+          throw "Could not find ACR in resource group $rgName"
+        }
+        Write-Host "ACR Name: $acrName"
+        $gitHash = git rev-parse --short HEAD 2>$null
+        if ([string]::IsNullOrEmpty($gitHash)) { $gitHash = "latest" }
+        Write-Host "Building and pushing image..."
+        az acr build --registry $acrName --image zava-storefront:latest --image "zava-storefront:$gitHash" ./src
+    posix:
+      shell: sh
+      run: |
+        # Build and push Docker image to Azure Container Registry using ACR Tasks
+        echo "Building container image in Azure Container Registry..."
+        echo "Finding resource group..."
+        RESOURCE_GROUP=$(az group list --query "[?tags.\`azd-env-name\`].name | [0]" -o tsv)
+        if [ -z "$RESOURCE_GROUP" ]; then
+          echo "ERROR: Could not find resource group. Please ensure infrastructure is provisioned."
+          exit 1
+        fi
+        echo "Resource Group: $RESOURCE_GROUP"
+        ACR_NAME=$(az acr list --resource-group $RESOURCE_GROUP --query "[0].name" -o tsv)
+        if [ -z "$ACR_NAME" ]; then
+          echo "ERROR: Could not find ACR in resource group $RESOURCE_GROUP"
+          exit 1
+        fi
+        echo "ACR Name: $ACR_NAME"
+        GIT_HASH=$(git rev-parse --short HEAD 2>/dev/null || echo "latest")
+        echo "Building and pushing image..."
+        az acr build --registry $ACR_NAME --image zava-storefront:latest --image zava-storefront:$GIT_HASH ./src
