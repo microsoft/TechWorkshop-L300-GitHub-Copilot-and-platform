@@ -1,0 +1,71 @@
+# ============================================================================
+# Azure Developer CLI (azd) Configuration
+# ============================================================================
+# Purpose: Define Azure Developer CLI configuration for ZavaStorefront
+# Usage: azd up (provision + deploy), azd provision, azd deploy
+# ============================================================================
+
+name: zavastore
+metadata:
+  template: azd-starter
+
+# ============================================================================
+# Infrastructure Configuration
+# ============================================================================
+infra:
+  provider: bicep
+  path: ./infra
+  module: main
+
+# ============================================================================
+# Services Configuration
+# ============================================================================
+services:
+  web:
+    # Service host configuration
+    host: containerapp
+
+    # Project configuration
+    project: ./src
+    language: csharp
+
+    # Docker configuration
+    docker:
+      path: ./src/Dockerfile
+      context: ./src
+
+    # Resource mapping (connects to Azure resources)
+    resourceName: ${AZURE_WEB_APP_NAME}
+
+# ============================================================================
+# Pipeline Configuration
+# ============================================================================
+pipeline:
+  provider: github
+
+# ============================================================================
+# Hooks (optional customization points)
+# ============================================================================
+hooks:
+  preprovision:
+    shell: pwsh
+    run: |
+      Write-Host "Preparing to provision Azure resources..."
+
+  postprovision:
+    shell: pwsh
+    run: |
+      Write-Host "Azure resources provisioned successfully!"
+      Write-Host "Container Registry: $env:AZURE_CONTAINER_REGISTRY_ENDPOINT"
+      Write-Host "Web App URL: $env:AZURE_WEB_APP_URL"
+
+  predeploy:
+    shell: pwsh
+    run: |
+      Write-Host "Preparing to deploy application..."
+
+  postdeploy:
+    shell: pwsh
+    run: |
+      Write-Host "Application deployed successfully!"
+      Write-Host "Access your app at: $env:AZURE_WEB_APP_URL"

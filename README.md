@@ -1,6 +1,51 @@
 # Project
 
-This lab guides you through a series of practical exercises focused on modernising Zava's business applications and databases by migrating everything to Azure, leveraging GitHub Enterprise, Copilot, and Azure services. Each exercise is designed to deliver hands-on experience in governance, automation, security, AI integration, and observability, ensuring Zava’s transition to Azure is robust, secure, and future-ready.
+This lab guides you through a series of practical exercises focused on modernising Zava's business applications and databases by migrating everything to Azure, leveraging GitHub Enterprise, Copilot, and Azure services. Each exercise is designed to deliver hands-on experience in governance, automation, security, AI integration, and observability, ensuring Zava's transition to Azure is robust, secure, and future-ready.
+
+## Quickstart: GitHub Actions Deployment
+
+The workflow at `.github/workflows/quickstart-deploy.yml` builds and deploys the .NET container app to Azure App Service.
+
+### Prerequisites
+
+1. **Azure resources deployed** — Run `azd provision` or deploy the Bicep templates in `/infra` first.
+2. **GitHub OIDC federation configured** — Create a federated credential in your Azure AD app registration for GitHub Actions.
+
+### Required GitHub Secrets
+
+Configure these in **Settings > Secrets and variables > Actions > Secrets**:
+
+| Secret | Description |
+|--------|-------------|
+| `AZURE_CLIENT_ID` | App registration (service principal) client ID |
+| `AZURE_TENANT_ID` | Azure AD tenant ID |
+| `AZURE_SUBSCRIPTION_ID` | Target Azure subscription ID |
+
+### Required GitHub Variables
+
+Configure these in **Settings > Secrets and variables > Actions > Variables**:
+
+| Variable | Description | Example |
+|----------|-------------|---------|
+| `AZURE_RESOURCE_GROUP` | Resource group containing the App Service | `rg-zavastore-dev-westus3` |
+| `ACR_NAME` | Azure Container Registry name (without `.azurecr.io`) | `crzavastore7x2k3m` |
+| `WEB_APP_NAME` | Azure App Service name | `app-zavastore-dev-7x2k3m` |
+
+> **Tip:** Get these values from your `azd provision` output or the Azure Portal.
+
+### Setting Up OIDC Federation
+
+1. In Azure Portal, go to **Microsoft Entra ID > App registrations**.
+2. Create or select an app registration.
+3. Under **Certificates & secrets > Federated credentials**, add a credential:
+   - **Federated credential scenario**: GitHub Actions deploying Azure resources
+   - **Organization**: Your GitHub org/username
+   - **Repository**: This repository name
+   - **Entity type**: Branch or Environment
+   - **Branch**: `main` (or your deployment branch)
+4. Grant the app registration **Contributor** and **AcrPush** roles on your subscription or resource group.
+
+For detailed instructions, see [Microsoft Docs: Configure OIDC for GitHub Actions](https://learn.microsoft.com/azure/developer/github/connect-from-azure-openid-connect).
 
 ## Contributing
 
