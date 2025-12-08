@@ -1,0 +1,17 @@
+name: zavastore
+resourceGroup: rg-dev
+services:
+  web:
+    project: src/ZavaStorefront.csproj
+    language: dotnet
+    docker:
+      registry: zavastoredevacr.azurecr.io
+    launchCommand: 'dotnet run --project src/ZavaStorefront.csproj'
+infrastructure:
+  path: infra
+  template: infra
+  location: westus3
+  provision:
+    command: 'azd provision'
+  deploy:
+    command: 'azd deploy'

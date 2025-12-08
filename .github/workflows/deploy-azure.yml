@@ -1,0 +1,32 @@
+name: Build and Deploy to Azure
+
+on:
+  push:
+    branches: [ main, dev ]
+  pull_request:
+    branches: [ main, dev ]
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Log in to Azure
+        uses: azure/login@v1
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      - name: Build and push Docker image to ACR
+        run: |
+          az acr build \
+            --registry ${{ secrets.AZURE_CONTAINER_REGISTRY_NAME }} \
+            --image zavastore:${{ github.sha }} \
+            --file src/Dockerfile src/
+
+      - name: Deploy to Azure Web App
+        uses: azure/webapps-deploy@v2
+        with:
+          app-name: ${{ secrets.AZURE_APP_SERVICE_NAME }}
+          images: ${{ secrets.AZURE_CONTAINER_REGISTRY_NAME }}.azurecr.io/zavastore:${{ github.sha }}
