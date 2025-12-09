@@ -1,0 +1,21 @@
+# ZavaStorefront Azure Developer CLI Configuration
+# Use this configuration with Azure Developer CLI (azd) for deployment
+
+name: zavastore
+
+metadata:
+  template: azd-init
+
+services:
+  web:
+    project: ./src
+    language: dotnet
+    host: containerapp
+    docker:
+      path: ./Dockerfile
+      context: .
+
+infra:
+  provider: bicep
+  path: ./infra
+  module: main

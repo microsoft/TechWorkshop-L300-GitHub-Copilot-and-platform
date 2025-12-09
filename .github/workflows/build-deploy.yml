@@ -1,0 +1,58 @@
+name: Build and Deploy
+
+on:
+  push:
+    branches: [main, dev]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+env:
+  AZURE_RESOURCE_GROUP: rg-zavastore-dev
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Azure Login
+        uses: azure/login@v2
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
+      - name: Get Resource Names from Bicep Outputs
+        id: resources
+        run: |
+          DEPLOYMENT=$(az deployment group list \
+            --resource-group ${{ env.AZURE_RESOURCE_GROUP }} \
+            --query "[?properties.provisioningState=='Succeeded'] | sort_by(@, &properties.timestamp) | [-1]" \
+            -o json)
+          
+          ACR_NAME=$(echo $DEPLOYMENT | jq -r '.properties.outputs.containerRegistryName.value')
+          WEBAPP_NAME=$(echo $DEPLOYMENT | jq -r '.properties.outputs.webAppName.value')
+          
+          echo "acr_name=$ACR_NAME" >> $GITHUB_OUTPUT
+          echo "webapp_name=$WEBAPP_NAME" >> $GITHUB_OUTPUT
+
+      - name: Build and Push to ACR
+        run: |
+          az acr build \
+            --registry ${{ steps.resources.outputs.acr_name }} \
+            --image zavastore:${{ github.sha }} \
+            --image zavastore:latest \
+            --file Dockerfile \
+            .
+
+      - name: Deploy to App Service
+        run: |
+          az webapp config container set \
+            --name ${{ steps.resources.outputs.webapp_name }} \
+            --resource-group ${{ env.AZURE_RESOURCE_GROUP }} \
+            --docker-custom-image-name ${{ steps.resources.outputs.acr_name }}.azurecr.io/zavastore:${{ github.sha }}
+          
+          az webapp restart \
+            --name ${{ steps.resources.outputs.webapp_name }} \
+            --resource-group ${{ env.AZURE_RESOURCE_GROUP }}
