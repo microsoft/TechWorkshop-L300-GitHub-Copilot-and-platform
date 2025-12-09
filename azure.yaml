@@ -1,0 +1,30 @@
+# Azure Developer CLI (azd) configuration file
+# Learn more: https://learn.microsoft.com/azure/developer/azure-developer-cli/azd-schema
+
+name: zava-storefront
+
+metadata:
+  template: azd-init
+
+services:
+  web:
+    project: ./src
+    language: csharp
+    host: appservice
+    docker:
+      path: ./Dockerfile
+      context: .
+
+infra:
+  provider: bicep
+  path: ./infra
+  module: main
+
+hooks:
+  # Build the container image in ACR (no local Docker required)
+  predeploy:
+    shell: pwsh
+    run: |
+      $acrName = azd env get-value ACR_NAME
+      $imageName = azd env get-value SERVICE_WEB_IMAGE_NAME
+      az acr build --registry $acrName --image "${imageName}:latest" --file ./Dockerfile .

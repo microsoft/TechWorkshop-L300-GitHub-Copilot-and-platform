@@ -1,0 +1,10 @@
+{
+  "appServicePlan": "asp-",
+  "appServiceWebApp": "app-",
+  "containerRegistry": "cr",
+  "logAnalyticsWorkspace": "log-",
+  "applicationInsights": "appi-",
+  "resourceGroup": "rg-",
+  "cognitiveServicesAccount": "cog-",
+  "openAiDeployment": "oai-"
+}
