@@ -1,0 +1,33 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "environmentName": {
+      "value": "dev"
+    },
+    "location": {
+      "value": "westus3"
+    },
+    "resourcePrefix": {
+      "value": "zava-storefront"
+    },
+    "containerImageName": {
+      "value": "zavastorefront"
+    },
+    "containerImageTag": {
+      "value": "latest"
+    },
+    "appServicePlanSku": {
+      "value": "B2"
+    },
+    "appServiceInstanceCount": {
+      "value": 1
+    },
+    "enableAppInsights": {
+      "value": true
+    },
+    "enableKeyVault": {
+      "value": true
+    }
+  }
+}

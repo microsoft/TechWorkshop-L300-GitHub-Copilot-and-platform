@@ -1,0 +1,74 @@
+# Azure Developer CLI (AZD) Configuration
+# This file configures the AZD project for ZavaStorefront infrastructure deployment
+
+name: zava-storefront
+title: ZavaStorefront Web Application
+description: Deploy ZavaStorefront ASP.NET Core application with Azure resources
+
+# Metadata
+metadata:
+  version: 1.0.0
+  template: "AZD"
+  language: "csharp"
+
+# Environment configuration
+env:
+  # Azure subscription ID (will be set during azd init)
+  AZURE_SUBSCRIPTION_ID: ${AZURE_SUBSCRIPTION_ID}
+  
+  # Azure tenant ID (will be set during azd init)
+  AZURE_TENANT_ID: ${AZURE_TENANT_ID}
+  
+  # Environment name
+  ENVIRONMENT_NAME: dev
+  
+  # Azure region
+  AZURE_LOCATION: westus3
+  
+  # Resource naming prefix
+  RESOURCE_PREFIX: zava-storefront
+  
+  # Container settings
+  CONTAINER_IMAGE_NAME: zavastorefront
+  CONTAINER_IMAGE_TAG: latest
+  
+  # App Service settings
+  APP_SERVICE_PLAN_SKU: B2
+  APP_SERVICE_INSTANCE_COUNT: 1
+  
+  # Feature flags
+  ENABLE_APP_INSIGHTS: "true"
+  ENABLE_KEY_VAULT: "true"
+
+# Infrastructure definition
+infrastructure:
+  # Path to Bicep templates
+  bicep: infra/main.bicep
+  
+  # Parameters file
+  parameters: infra/main.parameters.json
+
+# Service definitions
+services:
+  web:
+    # Relative path to the web application source
+    project: src
+    
+    # Docker configuration
+    docker:
+      # Dockerfile path
+      path: ./Dockerfile
+      
+      # Docker context
+      context: .
+      
+      # Build target (if using multi-stage Dockerfile)
+      target: runtime
+    
+    # Host type - appservice, containerapp, function, staticwebapp, etc.
+    host: appservice
+    
+    # Expose port
+    port: 80
+
+
