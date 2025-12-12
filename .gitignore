@@ -144,3 +144,4 @@ desktop.ini
 !/.gitattributes
 !/.gitignore
 .DS_Store
+.azure
