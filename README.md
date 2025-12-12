@@ -2,6 +2,34 @@
 
 This lab guides you through a series of practical exercises focused on modernising Zava's business applications and databases by migrating everything to Azure, leveraging GitHub Enterprise, Copilot, and Azure services. Each exercise is designed to deliver hands-on experience in governance, automation, security, AI integration, and observability, ensuring Zava’s transition to Azure is robust, secure, and future-ready.
 
+## GitHub Actions quickstart (container deploy)
+
+This repo includes a minimal GitHub Actions workflow that uses `azd` to provision the infrastructure in `infra/` and deploy the `storefront` service as a container to the App Service it creates: [.github/workflows/azure.yml](.github/workflows/azure.yml).
+
+### Prerequisites
+
+1. Create an Azure service principal with federated credentials for GitHub Actions (OIDC).
+2. Ensure the service principal has permission to deploy to your subscription (and to create resources in the target resource group).
+
+### Configure GitHub Secrets
+
+In your GitHub repo, go to **Settings → Secrets and variables → Actions → Secrets** and add:
+
+- `AZURE_CLIENT_ID`: Client ID (appId) of the service principal
+- `AZURE_TENANT_ID`: Tenant ID
+- `AZURE_SUBSCRIPTION_ID`: Subscription ID
+
+### Optional variables
+
+Edit the workflow file to change:
+
+- `AZURE_ENV_NAME` (default: `dev`)
+- `AZURE_LOCATION` (default: `westus3`)
+
+### Run
+
+- Push to `main`, or run the workflow manually from the **Actions** tab.
+
 ## Contributing
 
 This project welcomes contributions and suggestions.  Most contributions require you to agree to a

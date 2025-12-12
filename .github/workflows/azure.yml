@@ -1,0 +1,59 @@
+name: Build and Deploy to Azure App Service
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:
+
+env:
+  # Expected configuration:
+  # - GitHub variables (recommended):
+  #   - AZURE_CONTAINER_REGISTRY_NAME: ACR name WITHOUT ".azurecr.io"
+  #   - AZURE_APP_SERVICE_NAME: App Service name
+  # - GitHub secrets (legacy fallback):
+  #   - ACR_LOGIN_SERVER: e.g. "myregistry.azurecr.io"
+  #   - ACR_NAME: e.g. "myregistry"
+  #   - APP_NAME: App Service name
+  ACR_NAME: ${{ vars.AZURE_CONTAINER_REGISTRY_NAME != '' && vars.AZURE_CONTAINER_REGISTRY_NAME || secrets.ACR_NAME }}
+  ACR_LOGIN_SERVER: ${{ vars.AZURE_CONTAINER_REGISTRY_NAME != '' && format('{0}.azurecr.io', vars.AZURE_CONTAINER_REGISTRY_NAME) || secrets.ACR_LOGIN_SERVER }}
+  REGISTRY: ${{ vars.AZURE_CONTAINER_REGISTRY_NAME != '' && format('{0}.azurecr.io', vars.AZURE_CONTAINER_REGISTRY_NAME) || secrets.ACR_LOGIN_SERVER }}
+  IMAGE_NAME: simplestore
+  APP_NAME: ${{ vars.AZURE_APP_SERVICE_NAME != '' && vars.AZURE_APP_SERVICE_NAME || secrets.APP_NAME }}
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Log in to Azure
+        uses: azure/login@v2
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      - name: Log in to Azure Container Registry
+        run: az acr login --name "$ACR_NAME"
+
+      - name: Build and push Docker image
+        run: |
+          set -euo pipefail
+
+          IMAGE_SHA_TAG="${REGISTRY}/${IMAGE_NAME}:${GITHUB_SHA}"
+          IMAGE_LATEST_TAG="${REGISTRY}/${IMAGE_NAME}:latest"
+
+          # Build the Docker image
+          docker build -t "$IMAGE_SHA_TAG" -t "$IMAGE_LATEST_TAG" ./src
+
+          # Push both tags to registry
+          docker push "$IMAGE_SHA_TAG"
+          docker push "$IMAGE_LATEST_TAG"
+
+      - name: Deploy to Azure App Service
+        uses: azure/webapps-deploy@v3
+        with:
+          app-name: ${{ env.APP_NAME }}
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.sha }}

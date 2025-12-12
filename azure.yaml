@@ -1,0 +1,29 @@
+# AZD configuration for ZavaStorefront dev environment
+name: zavastorefront
+metadata:
+  template: "zavastorefront-dev"
+
+infra:
+  provider: bicep
+  path: infra
+  hooks: infra/main.hooks.yaml
+
+services:
+  storefront:
+    project: ./src
+    language: dotnet
+    host: appservice  # Change from 'webapp' to 'appservice'
+    docker:
+      context: ./src
+      file: ./src/Dockerfile
+      image: zavastorefront
+      registry: ${containerRegistryLoginServer}
+
+pipeline:
+  provider: github
+  path: .github/workflows/azure.yml
+
+environment:
+  location: westus3
+  environment: dev
+  resourceGroupName: rg-zavastore-dev-westus3
