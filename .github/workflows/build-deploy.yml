@@ -3,7 +3,7 @@ name: Build and Deploy
 permissions:
   id-token: write
   contents: read
-  
+
 on:
   push:
     branches: [ main ]
@@ -41,4 +41,4 @@ jobs:
           --resource-group ${{ vars.AZURE_RESOURCE_GROUP }} \
           --docker-custom-image-name ${{ vars.AZURE_CONTAINER_REGISTRY }}.azurecr.io/zavastorefont:${{ github.sha }} \
           --docker-registry-server-url https://${{ vars.AZURE_CONTAINER_REGISTRY }}.azurecr.io \
-          --acr-use-managed-identity true
+          --use-managed-identity true
