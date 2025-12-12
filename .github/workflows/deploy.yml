@@ -1,0 +1,43 @@
+name: Build and Deploy .NET App as Container to Azure Web App
+
+on:
+  push:
+    branches: [ main ]
+    paths: [ 'src/**' ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    env:
+      AZURE_WEBAPP_NAME: ${{ secrets.AZURE_WEBAPP_NAME }}
+      AZURE_RESOURCE_GROUP: ${{ secrets.AZURE_RESOURCE_GROUP }}
+      AZURE_CONTAINER_REGISTRY: ${{ secrets.AZURE_CONTAINER_REGISTRY }}
+      IMAGE_NAME: ${{ vars.IMAGE_NAME }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Log in to Azure
+        uses: azure/login@v2
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          client-secret: ${{ secrets.AZURE_CLIENT_SECRET }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
+      - name: Log in to ACR
+        run: az acr login --name ${{ env.AZURE_CONTAINER_REGISTRY }}
+
+      - name: Build and push Docker image
+        run: |
+          docker build -t ${{ env.AZURE_CONTAINER_REGISTRY }}/${{ env.IMAGE_NAME }} ./src
+          docker push ${{ env.AZURE_CONTAINER_REGISTRY }}/${{ env.IMAGE_NAME }}
+
+      - name: Deploy to Azure Web App
+        uses: azure/webapps-deploy@v3
+        with:
+          app-name: ${{ env.AZURE_WEBAPP_NAME }}
+          images: ${{ env.AZURE_CONTAINER_REGISTRY }}/${{ env.IMAGE_NAME }}
