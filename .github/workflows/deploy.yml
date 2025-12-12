@@ -1,0 +1,48 @@
+name: Build and Deploy to Azure Container App
+
+on:
+  push:
+    branches: [main]
+    paths: ['src/**']
+  pull_request:
+    branches: ['*']
+  workflow_dispatch:
+
+env:
+  AZURE_CONTAINER_APP_NAME: src
+  AZURE_RESOURCE_GROUP: rg-workshop-l300
+  CONTAINER_REGISTRY: crmzcdesoprdj4i.azurecr.io
+  IMAGE_NAME: zava-storefront
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Log in to Azure
+        uses: azure/login@v2
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      - name: Log in to Azure Container Registry
+        run: |
+          az acr login --name ${{ secrets.AZURE_CONTAINER_REGISTRY_NAME }}
+
+      - name: Build and push Docker image
+        run: |
+          docker build -t ${{ env.CONTAINER_REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.sha }} \
+                       -t ${{ env.CONTAINER_REGISTRY }}/${{ env.IMAGE_NAME }}:latest \
+                       -f ./src/Dockerfile \
+                       ./src
+          docker push ${{ env.CONTAINER_REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.sha }}
+          docker push ${{ env.CONTAINER_REGISTRY }}/${{ env.IMAGE_NAME }}:latest
+
+      - name: Deploy to Azure Container App
+        run: |
+          az containerapp update \
+            --name ${{ env.AZURE_CONTAINER_APP_NAME }} \
+            --resource-group ${{ env.AZURE_RESOURCE_GROUP }} \
+            --image ${{ env.CONTAINER_REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.sha }}
