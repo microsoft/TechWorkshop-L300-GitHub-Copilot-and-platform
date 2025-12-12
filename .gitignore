@@ -90,11 +90,6 @@ htmlcov/
 # Jupyter Notebook
 .ipynb_checkpoints
 
-# Docker
-**/Dockerfile*
-**/.dockerignore
-docker-compose.override.yml
-
 # Logs
 *.log
 logs/
