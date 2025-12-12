@@ -1,0 +1,61 @@
+name: Build and Deploy to App Service (Container)
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - "src/**"
+      - "src/Dockerfile"
+      - ".github/workflows/appservice-deploy.yml"
+
+permissions:
+  id-token: write
+  contents: read
+
+env:
+  RESOURCE_GROUP: ${{ vars.AZ_RESOURCE_GROUP }}
+  WEBAPP_NAME: ${{ vars.AZ_WEBAPP_NAME }}
+  ACR_NAME: ${{ vars.AZ_ACR_NAME }}
+  IMAGE_NAME: ${{ vars.AZ_IMAGE_NAME }}
+  IMAGE_TAG: ${{ vars.AZ_IMAGE_TAG }}
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Azure Login (OIDC)
+        uses: azure/login@v2
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
+      - name: Resolve ACR login server
+        id: acr
+        run: |
+          ACR_LOGIN_SERVER=$(az acr show -n "$ACR_NAME" --query loginServer -o tsv)
+          echo "ACR_LOGIN_SERVER=$ACR_LOGIN_SERVER" >> $GITHUB_ENV
+
+      - name: Build image in ACR
+        run: |
+          az acr build \
+            -r "$ACR_NAME" \
+            -t "$IMAGE_NAME:$IMAGE_TAG" \
+            .
+
+      - name: Configure Web App to use image
+        run: |
+          az webapp config container set \
+            --name "$WEBAPP_NAME" \
+            --resource-group "$RESOURCE_GROUP" \
+            --docker-custom-image-name "DOCKER|$ACR_LOGIN_SERVER/$IMAGE_NAME:$IMAGE_TAG" \
+            --docker-registry-server-url "https://$ACR_LOGIN_SERVER"
+
+      - name: Restart Web App
+        run: |
+          az webapp restart \
+            --name "$WEBAPP_NAME" \
+            --resource-group "$RESOURCE_GROUP"

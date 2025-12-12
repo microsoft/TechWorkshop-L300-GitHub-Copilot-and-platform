@@ -1,0 +1,24 @@
+version: '3.8'
+
+services:
+  zava-app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8080:8080"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_URLS=http://+:8080
+    container_name: zava-storefront
+    restart: unless-stopped
+
+  # Optional: SQL Server for future database integration
+  # sqlserver:
+  #   image: mcr.microsoft.com/mssql/server:2019-latest
+  #   environment:
+  #     SA_PASSWORD: YourPassword123!
+  #     ACCEPT_EULA: Y
+  #   ports:
+  #     - "1433:1433"
+  #   container_name: zava-sqlserver
