@@ -1,6 +1,6 @@
 # ZavaStorefront Infrastructure (Dev)
 
-This folder contains Bicep modules and deployment instructions for provisioning the ZavaStorefront dev environment in Azure (westus3).
+This folder contains Bicep modules and deployment instructions for provisioning the ZavaStorefront dev environment in Azure (eastus).
 
 ## Modules
 - **ACR**: Azure Container Registry (Basic SKU)
@@ -20,7 +20,7 @@ This folder contains Bicep modules and deployment instructions for provisioning 
 - All resources are parameterized for environment, region, and SKU
 - App Service uses managed identity for ACR pulls (no passwords)
 - Application Insights is wired for monitoring
-- Microsoft Foundry is provisioned in westus3 (ensure quota)
+- Microsoft Foundry is provisioned in eastus (ensure quota)
 - See `main.bicep` for orchestration and module usage
 
 ## Cost

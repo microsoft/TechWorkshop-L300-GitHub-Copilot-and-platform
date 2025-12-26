@@ -24,6 +24,6 @@ pipeline:
   path: .github/workflows/azure.yml
 
 environment:
-  location: westus3
+  location: eastus
   environment: dev
-  resourceGroupName: rg-zavastore-dev-westus3
+  resourceGroupName: rg-zavastore-dev-eastus

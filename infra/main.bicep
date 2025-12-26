@@ -1,6 +1,6 @@
 // Main Bicep template for ZavaStorefront dev environment
 param environment string = 'dev'
-param location string = 'westus3'
+param location string = 'eastus'
 
 module acr 'modules/acr.bicep' = {
   name: 'acrModule'

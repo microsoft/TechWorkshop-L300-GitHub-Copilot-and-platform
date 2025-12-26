@@ -24,7 +24,7 @@ In your GitHub repo, go to **Settings → Secrets and variables → Actions → 
 Edit the workflow file to change:
 
 - `AZURE_ENV_NAME` (default: `dev`)
-- `AZURE_LOCATION` (default: `westus3`)
+- `AZURE_LOCATION` (default: `eastus`)
 
 ### Run
 
