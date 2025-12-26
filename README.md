@@ -30,6 +30,11 @@ Edit the workflow file to change:
 
 - Push to `main`, or run the workflow manually from the **Actions** tab.
 
+## assigned the permissions to managed identity
+
+- Cognitive Services OpenAI Contributor
+- Cognitive Services Contributor
+
 ## Contributing
 
 This project welcomes contributions and suggestions.  Most contributions require you to agree to a
