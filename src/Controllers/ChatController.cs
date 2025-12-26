@@ -8,6 +8,7 @@ namespace ZavaStorefront.Controllers;
 
 public class ChatController : Controller
 {
+    private const string EmptyMessageError = "Please enter a question to send.";
     private readonly FoundryChatService _chatService;
     private readonly ILogger<ChatController> _logger;
 
@@ -30,20 +31,20 @@ public class ChatController : Controller
     {
         if (request is null)
         {
-            return BadRequest(new { error = "Please enter a question to send." });
+            return BadRequest(new { error = EmptyMessageError });
         }
 
         if (!ModelState.IsValid)
         {
             var message = ModelState.Values.SelectMany(v => v.Errors).FirstOrDefault()?.ErrorMessage
-                          ?? "Please enter a question to send.";
+                          ?? EmptyMessageError;
             return BadRequest(new { error = message });
         }
 
         var prompt = request.Message!.Trim();
         if (string.IsNullOrEmpty(prompt))
         {
-            return BadRequest(new { error = "Please enter a question to send." });
+            return BadRequest(new { error = EmptyMessageError });
         }
 
         try
