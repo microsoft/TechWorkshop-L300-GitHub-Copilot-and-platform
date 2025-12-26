@@ -54,7 +54,7 @@ public class ChatController : Controller
         catch (InvalidOperationException ex)
         {
             _logger.LogWarning(ex, "Chat configuration or request failed.");
-            return StatusCode(StatusCodes.Status500InternalServerError, new { error = ex.Message });
+            return StatusCode(StatusCodes.Status500InternalServerError, new { error = "Something went wrong while contacting the chat service." });
         }
         catch (OperationCanceledException ex) when (cancellationToken.IsCancellationRequested)
         {
