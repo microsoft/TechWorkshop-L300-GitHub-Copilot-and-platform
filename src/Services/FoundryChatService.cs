@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using System.Text;
 using System.Text.Json;
 using Microsoft.Extensions.Options;
@@ -29,6 +30,13 @@ public class FoundryChatService
         }
 
         var endpoint = _options.Endpoint?.TrimEnd('/') ?? throw new InvalidOperationException("AZURE_FOUNDRY_ENDPOINT / Foundry:Endpoint is not configured.");
+        if (!Uri.TryCreate(endpoint, UriKind.Absolute, out var endpointUri))
+        {
+            throw new InvalidOperationException("Foundry endpoint is not a valid absolute URI. Example: https://<foundry-resource-name>.cognitiveservices.azure.com");
+        }
+
+        ValidateEndpoint(endpointUri);
+
         var apiKey = _options.ApiKey ?? throw new InvalidOperationException("AZURE_FOUNDRY_API_KEY / Foundry:ApiKey is not configured.");
         var deployment = _options.DeploymentName;
         if (string.IsNullOrWhiteSpace(deployment))
@@ -37,7 +45,7 @@ public class FoundryChatService
         }
 
         var apiVersion = string.IsNullOrWhiteSpace(_options.ApiVersion) ? "2024-05-01-preview" : _options.ApiVersion;
-        var requestUri = $"{endpoint}/openai/deployments/{deployment}/chat/completions?api-version={apiVersion}";
+        var requestUri = $"{endpointUri.AbsoluteUri.TrimEnd('/')}/openai/deployments/{deployment}/chat/completions?api-version={apiVersion}";
 
         var payload = new
         {
@@ -57,7 +65,7 @@ public class FoundryChatService
 
         request.Headers.Add("api-key", apiKey);
 
-        _logger.LogInformation("Sending chat request to Foundry deployment {Deployment}", deployment);
+        _logger.LogInformation("Sending chat request to Foundry deployment {Deployment} at {Endpoint}", deployment, endpointUri.Host);
 
         using var response = await _httpClient.SendAsync(request, cancellationToken);
 
@@ -65,8 +73,19 @@ public class FoundryChatService
         {
             var body = await response.Content.ReadAsStringAsync(cancellationToken);
             _logger.LogWarning("Foundry chat call failed with status {StatusCode}: {Body}", response.StatusCode, body);
+
             var trimmedBody = body?.Length > 2000 ? body[..2000] + "…" : body;
-            throw new InvalidOperationException($"Foundry chat request failed: {response.StatusCode} | {trimmedBody}");
+            var hint = response.StatusCode == HttpStatusCode.NotFound
+                ? $"Hint: Confirm the endpoint points to your Foundry workspace (e.g., https://<resource>.cognitiveservices.azure.com) and that deployment '{deployment}' exists and is published."
+                : null;
+
+            var message = $"Foundry chat request failed: {response.StatusCode} | {trimmedBody}";
+            if (!string.IsNullOrWhiteSpace(hint))
+            {
+                message += $" {hint}";
+            }
+
+            throw new InvalidOperationException(message);
         }
 
         await using var contentStream = await response.Content.ReadAsStreamAsync(cancellationToken);
@@ -95,6 +114,31 @@ public class FoundryChatService
         {
             public string? Role { get; init; }
             public string? Content { get; init; }
+        }
+    }
+
+    private static void ValidateEndpoint(Uri endpointUri)
+    {
+        if (!string.Equals(endpointUri.Scheme, Uri.UriSchemeHttps, StringComparison.OrdinalIgnoreCase))
+        {
+            throw new InvalidOperationException("Foundry endpoint must use HTTPS.");
+        }
+
+        // Accept common Azure OpenAI/Foundry hosts:
+        // - *.cognitiveservices.azure.com (Foundry workspace)
+        // - *.services.ai.azure.com (new workspace domains)
+        // - *.api.cognitive.microsoft.com (regional Azure OpenAI)
+        var host = endpointUri.Host.ToLowerInvariant();
+        var allowedSuffixes = new[]
+        {
+            ".cognitiveservices.azure.com",
+            ".services.ai.azure.com",
+            ".api.cognitive.microsoft.com"
+        };
+
+        if (!allowedSuffixes.Any(suffix => host.EndsWith(suffix, StringComparison.Ordinal)))
+        {
+            throw new InvalidOperationException("Foundry/OpenAI endpoint must be an Azure endpoint (cognitiveservices.azure.com, services.ai.azure.com, or api.cognitive.microsoft.com).");
         }
     }
 }
