@@ -93,7 +93,7 @@ namespace ZavaStorefront.Services
             return _products;
         }
 
-        public Product GetProductById(int id)
+        public Product? GetProductById(int id)
         {
             return _products.FirstOrDefault(p => p.Id == id);
         }

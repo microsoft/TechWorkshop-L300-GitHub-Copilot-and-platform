@@ -1,4 +1,7 @@
+using Azure.Core;
+using Azure.Identity;
 using ZavaStorefront.Services;
+using ZavaStorefront.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -18,6 +21,25 @@ builder.Services.AddSession(options =>
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddSingleton<ProductService>();
 builder.Services.AddScoped<CartService>();
+builder.Services.AddSingleton<TokenCredential>(_ => new DefaultAzureCredential());
+builder.Services.Configure<FoundryOptions>(builder.Configuration.GetSection("Foundry"));
+builder.Services.PostConfigure<FoundryOptions>(options =>
+{
+    options.Endpoint = builder.Configuration["AZURE_FOUNDRY_ENDPOINT"] ?? options.Endpoint;
+    options.ApiKey = builder.Configuration["AZURE_FOUNDRY_API_KEY"] ?? options.ApiKey;
+    options.DeploymentName = builder.Configuration["AZURE_FOUNDRY_DEPLOYMENT"] ?? options.DeploymentName;
+    options.ApiVersion = builder.Configuration["AZURE_FOUNDRY_API_VERSION"] ?? options.ApiVersion;
+});
+builder.Services.Configure<ContentSafetyOptions>(builder.Configuration.GetSection("ContentSafety"));
+builder.Services.PostConfigure<ContentSafetyOptions>(options =>
+{
+    options.Endpoint = builder.Configuration["AZURE_CONTENT_SAFETY_ENDPOINT"] ?? options.Endpoint;
+    options.ApiKey = builder.Configuration["AZURE_CONTENT_SAFETY_KEY"] ?? options.ApiKey;
+});
+builder.Services.AddHttpClient<FoundryChatService>(client =>
+{
+    client.Timeout = TimeSpan.FromSeconds(30);
+});
 
 var app = builder.Build();
 

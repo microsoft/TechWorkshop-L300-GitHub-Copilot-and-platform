@@ -1,0 +1,65 @@
+ {
+   "version": "Notebook/1.0",
+   "items": [
+     {
+       "type": 1,
+       "content": {
+         "json": "## AI Services Observability\nThis workbook visualizes Azure AI Services operational data using platform diagnostics from the AzureDiagnostics table.\n\nIt includes:\n- Request volume over time\n- Latency percentiles (p50/p95/p99)\n- Breakdown by operation name"
+       },
+       "name": "text - 0"
+     },
+     {
+       "type": 3,
+       "content": {
+         "version": "KqlItem/1.0",
+         "query": "AzureDiagnostics\n| where ResourceProvider == \"MICROSOFT.COGNITIVESERVICES\"\n| where Category == \"RequestResponse\"\n| summarize Requests = count() by bin(TimeGenerated, 5m)\n| order by TimeGenerated asc",
+         "size": 1,
+         "title": "Request Volume Over Time",
+         "queryType": 0,
+         "resourceType": "microsoft.operationalinsights/workspaces",
+         "visualization": "timechart",
+         "chartSettings": {
+           "yAxis": [
+             "Requests"
+           ]
+         }
+       },
+       "name": "RequestVolume"
+     },
+     {
+       "type": 3,
+       "content": {
+         "version": "KqlItem/1.0",
+         "query": "AzureDiagnostics\n| where ResourceProvider == \"MICROSOFT.COGNITIVESERVICES\"\n| where Category == \"RequestResponse\"\n| summarize\n p50 = percentiles(DurationMs, 50),\n p95 = percentiles(DurationMs, 95),\n p99 = percentiles(DurationMs, 99)\n by bin(TimeGenerated, 5m)\n| order by TimeGenerated asc",
+         "size": 1,
+         "title": "Latency Percentiles (p50 / p95 / p99)",
+         "queryType": 0,
+         "resourceType": "microsoft.operationalinsights/workspaces",
+         "visualization": "timechart"
+       },
+       "name": "LatencyTrends"
+     },
+     {
+       "type": 3,
+       "content": {
+         "version": "KqlItem/1.0",
+         "query": "AzureDiagnostics\n| where ResourceProvider == \"MICROSOFT.COGNITIVESERVICES\"\n| where Category == \"RequestResponse\"\n| extend Operation = OperationName\n| summarize Count = count() by bin(TimeGenerated, 5m), Operation\n| order by TimeGenerated asc",
+         "size": 1,
+         "title": "Requests by Operation Name Over Time",
+         "queryType": 0,
+         "resourceType": "microsoft.operationalinsights/workspaces",
+         "visualization": "timechart",
+         "chartSettings": {
+           "yAxis": [
+             "Count"
+           ]
+         }
+       },
+       "name": "OperationBreakdown"
+     }
+   ],
+   "fallbackResourceIds": [
+     "azureResourceId"
+   ],
+   "$schema": "https://github.com/Microsoft/Application-Insights-Workbooks/blob/master/schema/workbook.json"
+ }

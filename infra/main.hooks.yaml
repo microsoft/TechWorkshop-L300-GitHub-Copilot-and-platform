@@ -1,0 +1,18 @@
+# Example AZD hooks for ZavaStorefront
+# Place this file in the infra/ directory, not inside main.bicep
+
+onPreProvision:
+  steps:
+    - run: echo "Pre-provisioning step (e.g., validate config, check quotas)"
+
+onPostProvision:
+  steps:
+    - run: echo "Post-provisioning step (e.g., notify, tag resources)"
+
+onPreDeploy:
+  steps:
+    - run: echo "Pre-deploy step (e.g., run tests, lint)"
+
+onPostDeploy:
+  steps:
+    - run: echo "Post-deploy step (e.g., smoke test, notify)"
