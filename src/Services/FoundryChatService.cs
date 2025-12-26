@@ -30,7 +30,19 @@ public class FoundryChatService
 
         var csOpts = safetyOptions.Value;
         var csEndpoint = csOpts.Endpoint ?? throw new InvalidOperationException("AZURE_CONTENT_SAFETY_ENDPOINT / ContentSafety:Endpoint is not configured.");
-        _contentSafetyClient = new ContentSafetyClient(new Uri(csEndpoint), credential);
+        var csEndpointUri = new Uri(csEndpoint);
+
+        if (csEndpointUri.Host.EndsWith("api.cognitive.microsoft.com", StringComparison.OrdinalIgnoreCase))
+        {
+            var key = csOpts.ApiKey ?? throw new InvalidOperationException("Content Safety regional endpoints require an API key. Set AZURE_CONTENT_SAFETY_KEY or switch to a custom subdomain endpoint to use managed identity.");
+            _logger.LogInformation("Using API key authentication for Content Safety because a regional endpoint was provided.");
+            _contentSafetyClient = new ContentSafetyClient(csEndpointUri, new AzureKeyCredential(key));
+        }
+        else
+        {
+            _logger.LogInformation("Using managed identity authentication for Content Safety.");
+            _contentSafetyClient = new ContentSafetyClient(csEndpointUri, credential);
+        }
     }
 
     public async Task<string> GetChatCompletionAsync(string prompt, CancellationToken cancellationToken = default)
