@@ -1,4 +1,5 @@
 using ZavaStorefront.Services;
+using ZavaStorefront.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -18,6 +19,15 @@ builder.Services.AddSession(options =>
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddSingleton<ProductService>();
 builder.Services.AddScoped<CartService>();
+builder.Services.Configure<FoundryOptions>(builder.Configuration.GetSection("Foundry"));
+builder.Services.PostConfigure<FoundryOptions>(options =>
+{
+    options.Endpoint = builder.Configuration["AZURE_FOUNDRY_ENDPOINT"] ?? options.Endpoint;
+    options.ApiKey = builder.Configuration["AZURE_FOUNDRY_API_KEY"] ?? options.ApiKey;
+    options.DeploymentName = builder.Configuration["AZURE_FOUNDRY_DEPLOYMENT"] ?? options.DeploymentName;
+    options.ApiVersion = builder.Configuration["AZURE_FOUNDRY_API_VERSION"] ?? options.ApiVersion;
+});
+builder.Services.AddHttpClient<FoundryChatService>();
 
 var app = builder.Build();
 
