@@ -27,7 +27,10 @@ builder.Services.PostConfigure<FoundryOptions>(options =>
     options.DeploymentName = builder.Configuration["AZURE_FOUNDRY_DEPLOYMENT"] ?? options.DeploymentName;
     options.ApiVersion = builder.Configuration["AZURE_FOUNDRY_API_VERSION"] ?? options.ApiVersion;
 });
-builder.Services.AddHttpClient<FoundryChatService>();
+builder.Services.AddHttpClient<FoundryChatService>(client =>
+{
+    client.Timeout = TimeSpan.FromSeconds(30);
+});
 
 var app = builder.Build();
 
