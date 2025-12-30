@@ -1,8 +1,12 @@
 {
   "image": "mcr.microsoft.com/devcontainers/universal:2",
   "features": {
-    "ghcr.io/devcontainers/features/azure-cli:1": {
+    "ghcr.io/devcontainers/features/azure-cli": {
+      "version": "latest",
       "installBicep": true
+    },
+    "ghcr.io/azure/azure-dev/azd": {
+      "version": "latest"
     }
   }
 }
