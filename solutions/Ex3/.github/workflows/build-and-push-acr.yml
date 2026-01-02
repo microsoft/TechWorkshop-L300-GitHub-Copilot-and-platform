@@ -1,0 +1,67 @@
+name: Build and Push to ACR
+
+on:
+  push:
+    branches:
+      - main
+      - develop
+    paths:
+      - 'src/**'
+      - 'Dockerfile'
+  workflow_dispatch:
+
+permissions:
+  id-token: write
+  contents: read
+
+env:
+  ACR_NAME: ${{ vars.AZURE_CONTAINER_REGISTRY_NAME }}
+  IMAGE_NAME: zavastore
+  
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Azure Login
+        uses: azure/login@v1
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      - name: Get ACR name from environment
+        id: get-acr
+        run: |
+          if [ -z "${{ env.ACR_NAME }}" ]; then
+            echo "ACR_NAME environment variable is not set"
+            echo "Please set AZURE_CONTAINER_REGISTRY_NAME in repository variables"
+            exit 1
+          fi
+          echo "acr-name=${{ env.ACR_NAME }}" >> $GITHUB_OUTPUT
+
+      - name: Build and push image to ACR
+        run: |
+          az acr build \
+            --registry ${{ env.ACR_NAME }} \
+            --image ${{ env.IMAGE_NAME }}:${{ github.sha }} \
+            --image ${{ env.IMAGE_NAME }}:latest \
+            --file Dockerfile \
+            ./src
+
+      - name: Deploy to Azure Web App
+        if: github.ref == 'refs/heads/main'
+        run: |
+          az webapp config container set \
+            --name ${{ vars.AZURE_WEBAPP_NAME }} \
+            --resource-group ${{ vars.AZURE_RESOURCE_GROUP }} \
+            --docker-custom-image-name ${{ env.ACR_NAME }}.azurecr.io/${{ env.IMAGE_NAME }}:${{ github.sha }}
+          
+          az webapp restart \
+            --name ${{ vars.AZURE_WEBAPP_NAME }} \
+            --resource-group ${{ vars.AZURE_RESOURCE_GROUP }}
+
+      - name: Logout from Azure
+        if: always()
+        run: az logout

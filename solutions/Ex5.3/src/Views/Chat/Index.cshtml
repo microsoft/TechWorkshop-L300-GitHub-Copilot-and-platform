@@ -1,0 +1,66 @@
+@{
+    ViewData["Title"] = "AI Chat Assistant";
+}
+
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0">
+                        <i class="bi bi-chat-dots-fill me-2"></i>AI Chat Assistant
+                    </h4>
+                    <small>Powered by Microsoft Foundry - Phi-4</small>
+                </div>
+                <div class="card-body">
+                    <!-- Conversation Area -->
+                    <div id="chatConversation" class="border rounded p-3 mb-3 bg-light" style="height: 400px; overflow-y: auto;">
+                        <div class="text-muted text-center mt-5">
+                            <i class="bi bi-chat-text" style="font-size: 3rem;"></i>
+                            <p class="mt-2">Start a conversation! Ask me anything about our products.</p>
+                        </div>
+                    </div>
+
+                    <!-- Error Message -->
+                    <div id="errorMessage" class="alert alert-danger d-none" role="alert"></div>
+
+                    <!-- Input Area -->
+                    <div class="input-group">
+                        <input type="text" 
+                               id="messageInput" 
+                               class="form-control" 
+                               placeholder="Type your message here..." 
+                               maxlength="500"
+                               aria-label="Chat message">
+                        <button class="btn btn-primary" 
+                                type="button" 
+                                id="sendButton">
+                            <i class="bi bi-send-fill me-1"></i>Send
+                        </button>
+                        <button class="btn btn-outline-secondary" 
+                                type="button" 
+                                id="clearButton">
+                            <i class="bi bi-trash-fill me-1"></i>Clear
+                        </button>
+                    </div>
+                    <small class="text-muted">Press Enter to send • Maximum 500 characters</small>
+                </div>
+            </div>
+
+            <!-- Info Card -->
+            <div class="card mt-3">
+                <div class="card-body">
+                    <h6 class="card-title">About this Chat</h6>
+                    <p class="card-text small mb-0">
+                        This AI assistant can help you with product information, recommendations, and general questions 
+                        about Zava Storefront. The conversation is powered by Microsoft Foundry's Phi-4 model.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="~/js/chat.js"></script>
+}

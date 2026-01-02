@@ -1,0 +1,36 @@
+# azure.yaml
+# Azure Developer CLI (azd) configuration for ZavaStorefront
+
+name: zavastore
+metadata:
+  template: zavastore@0.0.1-beta
+
+# Define infrastructure
+infra:
+  provider: bicep
+  path: infra
+  module: main
+
+# Pipeline configuration
+pipeline:
+  provider: github
+
+# Hooks for deployment workflow
+hooks:
+  postprovision:
+    posix:
+      shell: sh
+      run: |
+        echo "Azure resources provisioned successfully"
+        echo "Resource Group: $(azd env get-value AZURE_RESOURCE_GROUP)"
+        echo "ACR Login Server: $(azd env get-value AZURE_CONTAINER_REGISTRY_ENDPOINT)"
+        echo "Web App: $(azd env get-value AZURE_WEBAPP_NAME)"
+      continueOnError: false
+    windows:
+      shell: pwsh
+      run: |
+        echo "Azure resources provisioned successfully"
+        echo "Resource Group: $(azd env get-value AZURE_RESOURCE_GROUP)"
+        echo "ACR Login Server: $(azd env get-value AZURE_CONTAINER_REGISTRY_ENDPOINT)"
+        echo "Web App: $(azd env get-value AZURE_WEBAPP_NAME)"
+      continueOnError: false
