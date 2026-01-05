@@ -1,0 +1,41 @@
+{
+  "name": "ZavaStorefront Codespace",
+  "image": "mcr.microsoft.com/devcontainers/dotnet:1-6.0-bookworm",
+  "features": {
+    "ghcr.io/devcontainers/features/azure-cli:1": {},
+    "ghcr.io/devcontainers/features/github-cli:1": {}
+  },
+  "postCreateCommand": "dotnet dev-certs https --trust && cd src && dotnet restore && az bicep install && (command -v azd >/dev/null 2>&1 || curl -fsSL https://aka.ms/install-azd.sh | bash) && az version && azd version",
+  "containerEnv": {
+    "ASPNETCORE_URLS": "http://0.0.0.0:5256;https://0.0.0.0:7060"
+  },
+  "forwardPorts": [5256, 7060],
+  "portsAttributes": {
+    "5256": {
+      "label": "ASP.NET Core (HTTP)",
+      "onAutoForward": "notify",
+      "protocol": "http"
+    },
+    "7060": {
+      "label": "ASP.NET Core (HTTPS)",
+      "onAutoForward": "notify",
+      "protocol": "https"
+    }
+  },
+  "customizations": {
+    "vscode": {
+      "settings": {
+        "dotnet.defaultSolution": "src/ZavaStorefront.sln",
+        "editor.formatOnSave": true,
+        "files.autoSave": "onFocusChange"
+      },
+      "extensions": [
+        "ms-dotnettools.csharp",
+        "ms-azuretools.vscode-bicep",
+        "ms-azuretools.azure-dev",
+        "ms-azuretools.vscode-azureappservice"
+      ]
+    }
+  },
+  "remoteUser": "vscode"
+}
