@@ -1,0 +1,85 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "metadata": {
+    "_generator": {
+      "name": "bicep",
+      "version": "0.39.26.7824",
+      "templateHash": "4387889972798563579"
+    }
+  },
+  "parameters": {
+    "appServicePlanName": {
+      "type": "string",
+      "metadata": {
+        "description": "Name of the App Service Plan"
+      }
+    },
+    "location": {
+      "type": "string",
+      "defaultValue": "[resourceGroup().location]",
+      "metadata": {
+        "description": "Location for the App Service Plan"
+      }
+    },
+    "sku": {
+      "type": "string",
+      "defaultValue": "B1",
+      "allowedValues": [
+        "F1",
+        "D1",
+        "B1",
+        "B2",
+        "B3",
+        "S1",
+        "S2",
+        "S3",
+        "P1v2",
+        "P2v2",
+        "P3v2"
+      ],
+      "metadata": {
+        "description": "App Service Plan SKU"
+      }
+    },
+    "tags": {
+      "type": "object",
+      "defaultValue": {},
+      "metadata": {
+        "description": "Tags for the resource"
+      }
+    }
+  },
+  "resources": [
+    {
+      "type": "Microsoft.Web/serverfarms",
+      "apiVersion": "2022-09-01",
+      "name": "[parameters('appServicePlanName')]",
+      "location": "[parameters('location')]",
+      "sku": {
+        "name": "[parameters('sku')]"
+      },
+      "kind": "linux",
+      "tags": "[parameters('tags')]",
+      "properties": {
+        "reserved": true
+      }
+    }
+  ],
+  "outputs": {
+    "appServicePlanId": {
+      "type": "string",
+      "metadata": {
+        "description": "The resource ID of the App Service Plan"
+      },
+      "value": "[resourceId('Microsoft.Web/serverfarms', parameters('appServicePlanName'))]"
+    },
+    "appServicePlanName": {
+      "type": "string",
+      "metadata": {
+        "description": "The name of the App Service Plan"
+      },
+      "value": "[parameters('appServicePlanName')]"
+    }
+  }
+}

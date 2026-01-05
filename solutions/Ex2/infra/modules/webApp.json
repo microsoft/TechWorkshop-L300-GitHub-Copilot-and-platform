@@ -1,0 +1,132 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "metadata": {
+    "_generator": {
+      "name": "bicep",
+      "version": "0.39.26.7824",
+      "templateHash": "11631784351184229835"
+    }
+  },
+  "parameters": {
+    "webAppName": {
+      "type": "string",
+      "metadata": {
+        "description": "Name of the Web App"
+      }
+    },
+    "location": {
+      "type": "string",
+      "defaultValue": "[resourceGroup().location]",
+      "metadata": {
+        "description": "Location for the Web App"
+      }
+    },
+    "appServicePlanId": {
+      "type": "string",
+      "metadata": {
+        "description": "App Service Plan ID"
+      }
+    },
+    "acrLoginServer": {
+      "type": "string",
+      "metadata": {
+        "description": "ACR login server"
+      }
+    },
+    "dockerImageName": {
+      "type": "string",
+      "defaultValue": "zavastore:latest",
+      "metadata": {
+        "description": "Docker image name with tag"
+      }
+    },
+    "appInsightsConnectionString": {
+      "type": "string",
+      "defaultValue": "",
+      "metadata": {
+        "description": "Application Insights Connection String"
+      }
+    },
+    "tags": {
+      "type": "object",
+      "defaultValue": {},
+      "metadata": {
+        "description": "Tags for the resource"
+      }
+    }
+  },
+  "resources": [
+    {
+      "type": "Microsoft.Web/sites",
+      "apiVersion": "2022-09-01",
+      "name": "[parameters('webAppName')]",
+      "location": "[parameters('location')]",
+      "kind": "app,linux,container",
+      "tags": "[parameters('tags')]",
+      "identity": {
+        "type": "SystemAssigned"
+      },
+      "properties": {
+        "serverFarmId": "[parameters('appServicePlanId')]",
+        "httpsOnly": true,
+        "siteConfig": {
+          "linuxFxVersion": "[format('DOCKER|{0}/{1}', parameters('acrLoginServer'), parameters('dockerImageName'))]",
+          "alwaysOn": true,
+          "appSettings": [
+            {
+              "name": "DOCKER_REGISTRY_SERVER_URL",
+              "value": "[format('https://{0}', parameters('acrLoginServer'))]"
+            },
+            {
+              "name": "WEBSITES_ENABLE_APP_SERVICE_STORAGE",
+              "value": "false"
+            },
+            {
+              "name": "APPLICATIONINSIGHTS_CONNECTION_STRING",
+              "value": "[parameters('appInsightsConnectionString')]"
+            },
+            {
+              "name": "ApplicationInsightsAgent_EXTENSION_VERSION",
+              "value": "~3"
+            },
+            {
+              "name": "XDT_MicrosoftApplicationInsights_Mode",
+              "value": "default"
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "outputs": {
+    "defaultHostName": {
+      "type": "string",
+      "metadata": {
+        "description": "The default hostname of the web app"
+      },
+      "value": "[reference(resourceId('Microsoft.Web/sites', parameters('webAppName')), '2022-09-01').defaultHostName]"
+    },
+    "principalId": {
+      "type": "string",
+      "metadata": {
+        "description": "The principal ID of the system-assigned managed identity"
+      },
+      "value": "[reference(resourceId('Microsoft.Web/sites', parameters('webAppName')), '2022-09-01', 'full').identity.principalId]"
+    },
+    "webAppId": {
+      "type": "string",
+      "metadata": {
+        "description": "The resource ID of the web app"
+      },
+      "value": "[resourceId('Microsoft.Web/sites', parameters('webAppName'))]"
+    },
+    "webAppName": {
+      "type": "string",
+      "metadata": {
+        "description": "The name of the web app"
+      },
+      "value": "[parameters('webAppName')]"
+    }
+  }
+}
