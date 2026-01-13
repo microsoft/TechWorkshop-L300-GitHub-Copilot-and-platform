@@ -1,0 +1,9 @@
+{
+    "recommendations": [
+        "github.copilot-chat",
+        "github.copilot",
+        "ms-azuretools.vscode-azure-github-copilot",
+        "ms-azuretools.vscode-bicep",
+        "ms-azuretools.vscode-docker"
+    ]
+}

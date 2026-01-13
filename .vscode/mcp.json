@@ -1,0 +1,35 @@
+{
+	"servers": {
+		"com.microsoft/azure": {
+			"type": "stdio",
+			"command": "dnx",
+			"args": [
+				"Azure.Mcp@2.0.0-beta.6",
+				"--yes",
+				"--",
+				"server",
+				"start"
+			]
+		},
+		"io.github.github/github-mcp-server": {
+			"type": "stdio",
+			"command": "docker",
+			"args": [
+				"run",
+				"-i",
+				"--rm",
+				"-e",
+				"GITHUB_PERSONAL_ACCESS_TOKEN=${input:gh_pat3}",
+				"ghcr.io/github/github-mcp-server:0.28.1"
+			]
+		}
+	},
+	"inputs": [
+		{
+			"id": "gh_pat3",
+			"type": "promptString",
+			"description": "",
+			"password": true
+		}
+	]
+}
