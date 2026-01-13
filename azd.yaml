@@ -1,0 +1,74 @@
+# Azure Developer CLI (azd) configuration for ZavaStorefront
+
+name: zavastore
+metadata:
+  template: zavastore-app@0.0.1
+
+# Services configuration
+services:
+  web:
+    project: ./src
+    language: dotnet
+    host: appservice
+    docker:
+      path: ./Dockerfile
+      context: ./src
+
+# Infrastructure configuration
+infra:
+  provider: bicep
+  path: ./infra
+  module: main
+  parameters:
+    location: westus3
+    environmentName: dev
+
+# Hooks - customize the deployment workflow
+hooks:
+  # Before provisioning infrastructure
+  preprovision:
+    posix:
+      shell: sh
+      run: echo "Preparing to provision Azure infrastructure..."
+    windows:
+      shell: pwsh
+      run: Write-Host "Preparing to provision Azure infrastructure..."
+  
+  # After provisioning infrastructure
+  postprovision:
+    posix:
+      shell: sh
+      run: |
+        echo "Infrastructure provisioned successfully!"
+        echo "Building and pushing Docker image to ACR..."
+    windows:
+      shell: pwsh
+      run: |
+        Write-Host "Infrastructure provisioned successfully!"
+        Write-Host "Building and pushing Docker image to ACR..."
+  
+  # Before deploying the application
+  predeploy:
+    posix:
+      shell: sh
+      run: echo "Preparing to deploy application..."
+    windows:
+      shell: pwsh
+      run: Write-Host "Preparing to deploy application..."
+  
+  # After deploying the application
+  postdeploy:
+    posix:
+      shell: sh
+      run: |
+        echo "Application deployed successfully!"
+        echo "Access your application at the URL shown above."
+    windows:
+      shell: pwsh
+      run: |
+        Write-Host "Application deployed successfully!"
+        Write-Host "Access your application at the URL shown above."
+
+# Pipeline configuration for CI/CD
+pipeline:
+  provider: github

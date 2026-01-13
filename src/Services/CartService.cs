@@ -17,6 +17,11 @@ namespace ZavaStorefront.Services
 
         public List<CartItem> GetCart()
         {
+            if (_httpContextAccessor.HttpContext == null)
+            {
+                return new List<CartItem>();
+            }
+
             var session = _httpContextAccessor.HttpContext.Session;
             var cartJson = session.GetString(CartSessionKey);
 
@@ -89,6 +94,11 @@ namespace ZavaStorefront.Services
 
         public void ClearCart()
         {
+            if (_httpContextAccessor.HttpContext == null)
+            {
+                return;
+            }
+
             var session = _httpContextAccessor.HttpContext.Session;
             session.Remove(CartSessionKey);
         }
@@ -107,6 +117,11 @@ namespace ZavaStorefront.Services
 
         private void SaveCart(List<CartItem> cart)
         {
+            if (_httpContextAccessor.HttpContext == null)
+            {
+                return;
+            }
+
             var session = _httpContextAccessor.HttpContext.Session;
             var cartJson = JsonSerializer.Serialize(cart);
             session.SetString(CartSessionKey, cartJson);

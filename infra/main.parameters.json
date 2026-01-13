@@ -1,0 +1,32 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "environmentName": {
+      "value": "dev"
+    },
+    "location": {
+      "value": "westus3"
+    },
+    "resourceBaseName": {
+      "value": "zavastore-gabyb01"
+    },
+    "acrSku": {
+      "value": "Basic"
+    },
+    "appServicePlanSku": {
+      "value": "B1"
+    },
+    "dockerImageName": {
+      "value": "mcr.microsoft.com/azuredocs/containerapps-helloworld:latest"
+    },
+    "tags": {
+      "value": {
+        "Environment": "dev",
+        "Application": "ZavaStorefront",
+        "ManagedBy": "Bicep",
+        "CreatedDate": "2026-01-13"
+      }
+    }
+  }
+}
