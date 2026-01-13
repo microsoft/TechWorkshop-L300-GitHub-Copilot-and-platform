@@ -1,0 +1,20 @@
+# azure.yaml - Azure Developer CLI project configuration
+
+name: zavastorefront
+metadata:
+  template: custom-bicep
+
+infra:
+  provider: bicep
+  path: ./infra
+
+services:
+  web:
+    project: ./src
+    language: dotnet
+    host: appservice
+
+# Optional: environments can be defined here or created with `azd env new`
+# environments:
+#   - name: dev
+#     location: westus3
