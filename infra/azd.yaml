@@ -1,0 +1,20 @@
+# azd.yaml for ZavaStorefront Dev Environment
+name: zavastorefront
+metadata:
+  template: bicep
+  description: Provision dev Azure infrastructure for ZavaStorefront using Bicep modules
+
+infra:
+  provider: bicep
+  path: ./main.bicep
+
+parameters:
+  location: westus3
+  environment: dev
+  resourceGroupName: rg-zavastore-dev-westus3
+
+hooks:
+  preprovision:
+    - echo "Validating prerequisites..."
+  postprovision:
+    - echo "Provisioning complete."
