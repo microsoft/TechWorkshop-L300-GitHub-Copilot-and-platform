@@ -1,0 +1,53 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/Azure/azure-dev/main/schemas/v1.0/azure.yaml.json
+
+name: zavastore
+metadata:
+  template: zavastore-aspnet-container
+
+services:
+  web:
+    project: ./src
+    language: csharp
+    host: appservice
+
+infra:
+  provider: bicep
+  path: infra
+  module: main
+
+pipeline:
+  provider: github
+
+hooks:
+  preprovision:
+    posix:
+      shell: sh
+      run: |
+        echo "Preparing to provision infrastructure..."
+    windows:
+      shell: pwsh
+      run: |
+        Write-Host "Preparing to provision infrastructure..."
+  
+  postprovision:
+    posix:
+      shell: sh
+      run: |
+        echo "Building and deploying container using ACR..."
+        ACR_NAME=$(azd env get-values | grep AZURE_CONTAINER_REGISTRY_NAME | cut -d'=' -f2 | tr -d '"')
+        az acr build --registry $ACR_NAME --image zavastore:latest ./src
+        echo "Restarting web app to pull new image..."
+        APP_NAME=$(azd env get-values | grep AZURE_APP_SERVICE_NAME | cut -d'=' -f2 | tr -d '"')
+        RG_NAME=$(azd env get-values | grep AZURE_RESOURCE_GROUP | cut -d'=' -f2 | tr -d '"')
+        az webapp restart --name $APP_NAME --resource-group $RG_NAME
+    windows:
+      shell: pwsh
+      run: |
+        Write-Host "Building and deploying container using ACR..."
+        $env_values = azd env get-values | Out-String
+        $ACR_NAME = ($env_values | Select-String 'AZURE_CONTAINER_REGISTRY_NAME="([^"]+)"').Matches.Groups[1].Value
+        az acr build --registry $ACR_NAME --image zavastore:latest ./src
+        Write-Host "Restarting web app to pull new image..."
+        $APP_NAME = ($env_values | Select-String 'AZURE_APP_SERVICE_NAME="([^"]+)"').Matches.Groups[1].Value
+        $RG_NAME = ($env_values | Select-String 'AZURE_RESOURCE_GROUP="([^"]+)"').Matches.Groups[1].Value
+        az webapp restart --name $APP_NAME --resource-group $RG_NAME
