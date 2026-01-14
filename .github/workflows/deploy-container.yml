@@ -35,7 +35,7 @@ jobs:
       
       - name: Build and push Docker image
         run: |
-          docker build -t ${{ secrets.ACR_LOGIN_SERVER }}/${{ vars.IMAGE_NAME }}:latest ./src
+          docker build -f ./src/Dockerfile -t ${{ secrets.ACR_LOGIN_SERVER }}/${{ vars.IMAGE_NAME }}:latest ./src
           docker push ${{ secrets.ACR_LOGIN_SERVER }}/${{ vars.IMAGE_NAME }}:latest
 
       - name: Deploy to Azure App Service
