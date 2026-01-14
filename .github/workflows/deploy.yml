@@ -1,4 +1,4 @@
-name: Build and Deploy to Azure App Service
+name: Build and Deploy to Azure Container Apps
 
 on:
     push:
@@ -35,13 +35,9 @@ jobs:
         docker push ${{ vars.ACR_NAME }}.azurecr.io/${{ env.IMAGE_NAME }}:${{ github.sha }}
         docker push ${{ vars.ACR_NAME }}.azurecr.io/${{ env.IMAGE_NAME }}:latest
     
-    - name: Deploy to Azure App Service
+    - name: Update and deploy Container App
       run: |
-        az webapp config container set \
-          --name ${{ vars.WEBAPP_NAME }} \
+        az containerapp update \
+          --name ${{ vars.CONTAINER_APP_NAME }} \
           --resource-group ${{ vars.RESOURCE_GROUP }} \
-          --docker-custom-image-name ${{ vars.ACR_NAME }}.azurecr.io/${{ env.IMAGE_NAME }}:${{ github.sha }}
-        
-        az webapp restart \
-          --name ${{ vars.WEBAPP_NAME }} \
-          --resource-group ${{ vars.RESOURCE_GROUP }}
+          --image ${{ vars.ACR_NAME }}.azurecr.io/${{ env.IMAGE_NAME }}:${{ github.sha }}

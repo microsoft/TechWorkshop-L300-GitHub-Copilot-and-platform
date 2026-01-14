@@ -1,7 +1,7 @@
 # GitHub Actions Deployment Setup
 
 ## Prerequisites
-- Azure resources deployed (ACR, App Service, Resource Group)
+- Azure resources deployed (ACR, Container App, Resource Group)
 - GitHub repository with admin access
 
 ## Configure GitHub Secrets
@@ -33,31 +33,19 @@ Add the following repository variables in **Settings** > **Secrets and variables
 
 | Variable Name | Description | Example |
 |--------------|-------------|---------|
-| `ACR_NAME` | Azure Container Registry name (without .azurecr.io) | `myacrname` |
-| `WEBAPP_NAME` | Azure App Service name | `mywebapp` |
+| `ACR_NAME` | Azure Container Registry name (without .azurecr.io) | `crn1a2b3c4d5e` |
+| `CONTAINER_APP_NAME` | Azure Container App name | `app1a2b3c4d5e` |
 | `RESOURCE_GROUP` | Azure Resource Group name | `my-rg` |
 
-## Grant ACR Access to App Service
+## Grant ACR Access to Container App
 
-After deployment, grant the App Service managed identity access to pull from ACR:
+The role assignment is configured automatically by the Bicep infrastructure, but verify it's in place:
 
 ```bash
-# Get the App Service principal ID
-PRINCIPAL_ID=$(az webapp identity show \
-  --name {webapp-name} \
-  --resource-group {resource-group-name} \
-  --query principalId -o tsv)
-
-# Get the ACR resource ID
-ACR_ID=$(az acr show \
-  --name {acr-name} \
-  --query id -o tsv)
-
-# Assign AcrPull role
-az role assignment create \
-  --assignee $PRINCIPAL_ID \
-  --role AcrPull \
-  --scope $ACR_ID
+# Verify the Container App can pull from ACR
+az role assignment list \
+  --assignee {container-app-principal-id} \
+  --scope {acr-resource-id}
 ```
 
 ## Trigger Deployment
