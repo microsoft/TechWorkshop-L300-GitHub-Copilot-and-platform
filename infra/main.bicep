@@ -5,11 +5,12 @@ param acrSku string = 'Basic'
 param planSkuName string = 'B1'
 param planSkuTier string = 'Basic'
 param webAppImageName string = 'zavastorefront:latest'
-param foundrySku string = 'Standard'
+param foundrySku string = 'S0'
 
 var acrName = 'crn${uniqueString(resourceGroup().id, env)}'
-var planName = 'asp${uniqueString(resourceGroup().id, env)}'
-var webAppName = 'app${uniqueString(resourceGroup().id, env)}'
+var envName = 'cae${uniqueString(resourceGroup().id, env)}'
+var containerAppName = 'app${uniqueString(resourceGroup().id, env)}'
+var logAnalyticsName = 'log-${uniqueString(resourceGroup().id, env)}'
 var appInsightsName = 'appi-${uniqueString(resourceGroup().id, env)}'
 var foundryName = 'aif-${uniqueString(resourceGroup().id, env)}'
 
@@ -22,23 +23,31 @@ module acr 'modules/acr.bicep' = {
   }
 }
 
-module plan 'modules/appserviceplan.bicep' = {
-  name: 'plan'
+module logAnalytics 'modules/loganalytics.bicep' = {
+  name: 'logAnalytics'
   params: {
-    name: planName
+    name: logAnalyticsName
     location: location
-    skuName: planSkuName
-    skuTier: planSkuTier
   }
 }
 
-module appInsights 'modules/appinsights.bicep' = {
-  name: 'appInsights'
+module containerAppEnv 'modules/appserviceplan.bicep' = {
+  name: 'containerAppEnv'
   params: {
-    name: appInsightsName
+    name: envName
     location: location
+    logAnalyticsCustomerId: logAnalytics.outputs.logAnalyticsCustomerId
+    logAnalyticsSharedKey: logAnalytics.outputs.logAnalyticsSharedKey
   }
 }
+
+// module appInsights 'modules/appinsights.bicep' = {
+//   name: 'appInsights'
+//   params: {
+//     name: appInsightsName
+//     location: location
+//   }
+// }
 
 module foundry 'modules/foundry.bicep' = {
   name: 'foundry'
@@ -49,23 +58,27 @@ module foundry 'modules/foundry.bicep' = {
   }
 }
 
-module webApp 'modules/webApp.bicep' = {
-  name: 'webApp'
+module containerApp 'modules/webApp.bicep' = {
+  name: 'containerApp'
   params: {
-    name: webAppName
+    name: containerAppName
     location: location
-    planId: plan.outputs.planId
-    acrLoginServer: acr.outputs.acrName + '.azurecr.io'
-    imageName: webAppImageName
-    managedIdentityId: '' // Will be set by system-assigned identity
-    appInsightsKey: appInsights.outputs.appInsightsKey
+    environmentId: containerAppEnv.outputs.environmentId
+    acrLoginServer: '${acr.outputs.acrName}.azurecr.io'
+    acrName: acr.outputs.acrName
   }
 }
 
 module roleAssignment 'modules/roleassignment.bicep' = {
   name: 'roleAssignment'
   params: {
-    principalId: webApp.outputs.webAppIdentityPrincipalId
-    acrId: acr.outputs.acrId
+    principalId: containerApp.outputs.containerAppIdentityPrincipalId
+    acrName: acr.outputs.acrName
   }
 }
+
+// Outputs for azd
+output AZURE_CONTAINER_REGISTRY_ENDPOINT string = '${acr.outputs.acrName}.azurecr.io'
+output AZURE_CONTAINER_REGISTRY_NAME string = acr.outputs.acrName
+output CONTAINER_APP_NAME string = containerApp.outputs.containerAppName
+output CONTAINER_APP_URL string = 'https://${containerApp.outputs.containerAppFqdn}'

@@ -5,9 +5,16 @@ metadata:
     template: azd-init@1.22.5
 services:
     src:
-        project: src/ZavaStorefront.csproj
+        project: ./src
         host: containerapp
         language: dotnet
+        docker:
+          path: ./Dockerfile
+          context: .
+          buildArgs:
+            - '--builder multi-plat'
+          platform: linux/amd64
+          registry: ${AZURE_CONTAINER_REGISTRY_ENDPOINT}
 resources:
     src:
         type: host.containerapp

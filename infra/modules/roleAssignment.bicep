@@ -1,13 +1,21 @@
 // Role Assignment module (AcrPull)
 param principalId string
-param acrId string
-param roleDefinitionId string = '/subscriptions/${subscription().subscriptionId}/providers/Microsoft.Authorization/roleDefinitions/7f951dda-4ed3-4680-a7ca-43fe172d538d' // AcrPull
+param acrName string
 
-resource roleAssignment 'Microsoft.Authorization/roleAssignments@2020-04-01-preview' = {
-  name: guid(acrId, principalId, roleDefinitionId)
+// Reference the existing ACR
+resource acr 'Microsoft.ContainerRegistry/registries@2023-01-01-preview' existing = {
+  name: acrName
+}
+
+// AcrPull role definition ID
+var acrPullRoleId = subscriptionResourceId('Microsoft.Authorization/roleDefinitions', '7f951dda-4ed3-4680-a7ca-43fe172d538d')
+
+resource roleAssignment 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
+  name: guid(acr.id, principalId, acrPullRoleId)
+  scope: acr
   properties: {
-    roleDefinitionId: roleDefinitionId
+    roleDefinitionId: acrPullRoleId
     principalId: principalId
-    scope: acrId
+    principalType: 'ServicePrincipal'
   }
 }

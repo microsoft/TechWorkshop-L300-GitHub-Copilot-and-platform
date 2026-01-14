@@ -1,32 +1,55 @@
-// Web App for Containers (Linux) module
+// Container App module
 param name string
 param location string = resourceGroup().location
-param planId string
-param acrLoginServer string
-param imageName string
-param managedIdentityId string
-param appInsightsKey string
+param environmentId string
+param acrLoginServer string = ''
+param acrName string = ''
+param serviceTag string = 'src'
 
-resource webApp 'Microsoft.Web/sites@2022-03-01' = {
+resource containerApp 'Microsoft.App/containerApps@2023-05-01' = {
   name: name
   location: location
+  tags: {
+    'azd-service-name': serviceTag
+  }
   identity: {
     type: 'SystemAssigned'
   }
   properties: {
-    serverFarmId: planId
-    siteConfig: {
-      linuxFxVersion: 'DOCKER|' + acrLoginServer + '/' + imageName
-    }
-    appSettings: [
-      {
-        name: 'APPINSIGHTS_INSTRUMENTATIONKEY'
-        value: appInsightsKey
+    managedEnvironmentId: environmentId
+    configuration: {
+      ingress: {
+        external: true
+        targetPort: 80
+        transport: 'auto'
       }
-    ]
+      registries: [
+        {
+          server: acrLoginServer
+          identity: 'system'
+        }
+      ]
+    }
+    template: {
+      containers: [
+        {
+          name: name
+          image: 'mcr.microsoft.com/azuredocs/containerapps-helloworld:latest'
+          resources: {
+            cpu: json('0.5')
+            memory: '1Gi'
+          }
+        }
+      ]
+      scale: {
+        minReplicas: 1
+        maxReplicas: 3
+      }
+    }
   }
 }
 
-output webAppId string = webApp.id
-output webAppName string = webApp.name
-output webAppIdentityPrincipalId string = webApp.identity.principalId
+output containerAppId string = containerApp.id
+output containerAppName string = containerApp.name
+output containerAppIdentityPrincipalId string = containerApp.identity.principalId
+output containerAppFqdn string = containerApp.properties.configuration.ingress.fqdn

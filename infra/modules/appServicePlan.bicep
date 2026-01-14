@@ -1,18 +1,22 @@
-// App Service Plan (Linux) module
+// Container Apps Environment module
 param name string
 param location string = resourceGroup().location
-param skuName string = 'B1'
-param skuTier string = 'Basic'
+param logAnalyticsCustomerId string
+param logAnalyticsSharedKey string
 
-resource plan 'Microsoft.Web/serverfarms@2022-03-01' = {
+resource containerAppEnv 'Microsoft.App/managedEnvironments@2023-05-01' = {
   name: name
   location: location
-  sku: {
-    name: skuName
-    tier: skuTier
+  properties: {
+    appLogsConfiguration: {
+      destination: 'log-analytics'
+      logAnalyticsConfiguration: {
+        customerId: logAnalyticsCustomerId
+        sharedKey: logAnalyticsSharedKey
+      }
+    }
   }
-  kind: 'linux'
 }
 
-output planId string = plan.id
-output planName string = plan.name
+output environmentId string = containerAppEnv.id
+output environmentName string = containerAppEnv.name
