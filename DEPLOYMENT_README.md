@@ -21,3 +21,5 @@ This repo uses a minimal GitHub Actions workflow to build the .NET app in `src` 
 3. Add the above variables under the **Variables** tab.
 
 The workflow will run on every push to the `main` branch.
+
+by Juan Osorio
