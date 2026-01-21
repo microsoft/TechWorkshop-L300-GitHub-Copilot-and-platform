@@ -1,6 +1,10 @@
 
 name: Build and Deploy .NET App as Container
 
+permissions:
+  id-token: write
+  contents: read
+
 on:
   push:
     branches:
@@ -16,7 +20,7 @@ jobs:
     env:
       AZURE_WEBAPP_NAME: ${{ vars.AZURE_WEBAPP_NAME }}
       AZURE_CONTAINER_REGISTRY: ${{ vars.AZURE_CONTAINER_REGISTRY }}
-      CONTAINER_IMAGE_NAME: ${{ vars.CONTAINER_IMAGE_NAME }}
+      CONTAINER_IMAGE_NAME: zavastorefront
     steps:
       - name: Checkout code
         uses: actions/checkout@v4

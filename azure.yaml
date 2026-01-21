@@ -21,11 +21,6 @@ services:
       # The image name will be set by the workflow or azd pipeline
 
 
-# Post-provisioning step to build and push Docker image to ACR
-hooks:
-  postprovision:
-    shell: pwsh
-    run: infra/postprovision-acr-build.ps1
 
 pipeline:
   provider: github
