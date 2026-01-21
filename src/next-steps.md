@@ -51,13 +51,13 @@ Q: I visited the service endpoint listed, and I'm seeing a blank page, a generic
 A: Your service may have failed to start, or it may be missing some configuration settings. To investigate further:
 
 1. Run `azd show`. Click on the link under "View in Azure Portal" to open the resource group in Azure Portal.
-2. Navigate to the specific Container App service that is failing to deploy.
-3. Click on the failing revision under "Revisions with Issues".
-4. Review "Status details" for more information about the type of failure.
-5. Observe the log outputs from Console log stream and System log stream to identify any errors.
-6. If logs are written to disk, use *Console* in the navigation to connect to a shell within the running container.
+2. Navigate to the specific App Service that is failing to deploy.
+3. Click on "Deployment Center" to review deployment status and logs.
+4. Review "Diagnose and solve problems" for more information about the type of failure.
+5. Observe the log outputs from "Log stream" to identify any errors.
+6. If logs are written to disk, use "SSH" or "Console" in the navigation to connect to a shell within the running container.
 
-For more troubleshooting information, visit [Container Apps troubleshooting](https://learn.microsoft.com/azure/container-apps/troubleshooting). 
+For more troubleshooting information, visit [App Service troubleshooting](https://learn.microsoft.com/azure/app-service/troubleshoot-diagnostic-logs). 
 
 ### Additional information
 
