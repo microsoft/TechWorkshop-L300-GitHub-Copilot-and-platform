@@ -1,0 +1,128 @@
+@{
+    ViewData["Title"] = "Chat Assistant";
+}
+
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0">
+                        <i class="bi bi-chat-dots me-2"></i>Zava Chat Assistant
+                    </h4>
+                </div>
+                <div class="card-body">
+                    <div id="chatMessages" class="chat-messages mb-3" style="height: 400px; overflow-y: auto; border: 1px solid #dee2e6; border-radius: 0.25rem; padding: 1rem;">
+                        <div class="text-center text-muted">
+                            <p>Welcome to Zava Chat Assistant!</p>
+                            <p>Ask me anything about our products, pricing, or any other questions.</p>
+                        </div>
+                    </div>
+                    <div class="input-group">
+                        <input type="text" id="messageInput" class="form-control" placeholder="Type your message..." autocomplete="off">
+                        <button id="sendButton" class="btn btn-primary" type="button">
+                            <i class="bi bi-send"></i> Send
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const chatMessages = document.getElementById('chatMessages');
+            const messageInput = document.getElementById('messageInput');
+            const sendButton = document.getElementById('sendButton');
+
+            function addMessage(content, isUser) {
+                const messageDiv = document.createElement('div');
+                messageDiv.className = `mb-3 ${isUser ? 'text-end' : ''}`;
+                
+                const messageBubble = document.createElement('div');
+                messageBubble.className = `d-inline-block p-2 rounded ${isUser ? 'bg-primary text-white' : 'bg-light'}`;
+                messageBubble.style.maxWidth = '80%';
+                messageBubble.textContent = content;
+                
+                messageDiv.appendChild(messageBubble);
+                chatMessages.appendChild(messageDiv);
+                chatMessages.scrollTop = chatMessages.scrollHeight;
+            }
+
+            function addLoadingIndicator() {
+                const loadingDiv = document.createElement('div');
+                loadingDiv.id = 'loadingIndicator';
+                loadingDiv.className = 'mb-3';
+                loadingDiv.innerHTML = `
+                    <div class="d-inline-block p-2 rounded bg-light">
+                        <div class="spinner-border spinner-border-sm text-primary" role="status">
+                            <span class="visually-hidden">Loading...</span>
+                        </div>
+                        <span class="ms-2">Thinking...</span>
+                    </div>
+                `;
+                chatMessages.appendChild(loadingDiv);
+                chatMessages.scrollTop = chatMessages.scrollHeight;
+            }
+
+            function removeLoadingIndicator() {
+                const loading = document.getElementById('loadingIndicator');
+                if (loading) {
+                    loading.remove();
+                }
+            }
+
+            async function sendMessage() {
+                const message = messageInput.value.trim();
+                if (!message) return;
+
+                // Clear welcome message on first send
+                if (chatMessages.querySelector('.text-muted')) {
+                    chatMessages.innerHTML = '';
+                }
+
+                addMessage(message, true);
+                messageInput.value = '';
+                messageInput.disabled = true;
+                sendButton.disabled = true;
+
+                addLoadingIndicator();
+
+                try {
+                    const response = await fetch('/Chat/SendMessage', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({ message: message })
+                    });
+
+                    const data = await response.json();
+                    removeLoadingIndicator();
+
+                    if (data.success) {
+                        addMessage(data.response, false);
+                    } else {
+                        addMessage(data.error || 'An error occurred. Please try again.', false);
+                    }
+                } catch (error) {
+                    removeLoadingIndicator();
+                    addMessage('Failed to send message. Please check your connection and try again.', false);
+                }
+
+                messageInput.disabled = false;
+                sendButton.disabled = false;
+                messageInput.focus();
+            }
+
+            sendButton.addEventListener('click', sendMessage);
+            messageInput.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    sendMessage();
+                }
+            });
+        });
+    </script>
+}
