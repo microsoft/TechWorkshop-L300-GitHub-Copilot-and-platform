@@ -1,3 +1,8 @@
+// Add Azure AI Content Safety
+var contentSafetyEndpoint = builder.Configuration["ContentSafety:Endpoint"] ?? Environment.GetEnvironmentVariable("AZURE_CONTENT_SAFETY_ENDPOINT");
+var contentSafetyKey = builder.Configuration["ContentSafety:Key"] ?? Environment.GetEnvironmentVariable("AZURE_CONTENT_SAFETY_KEY");
+builder.Services.AddSingleton<ZavaStorefront.Services.ContentSafetyService>(sp =>
+    new ZavaStorefront.Services.ContentSafetyService(contentSafetyEndpoint, contentSafetyKey, sp.GetRequiredService<ILogger<ZavaStorefront.Services.ContentSafetyService>>()));
 using ZavaStorefront.Services;
 
 var builder = WebApplication.CreateBuilder(args);

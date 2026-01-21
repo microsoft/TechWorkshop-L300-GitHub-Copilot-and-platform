@@ -1,3 +1,22 @@
+module logAnalytics 'modules/loganalytics.bicep' = {
+  name: 'logAnalyticsModule'
+  params: {
+    resourceGroupName: resourceGroupName
+    location: location
+    environment: environment
+  }
+}
+
+module foundry 'modules/foundry.bicep' = {
+  name: 'foundryModule'
+  params: {
+    resourceGroupName: resourceGroupName
+    location: location
+    environment: environment
+    foundrySku: foundrySku
+    logAnalyticsWorkspaceId: logAnalytics.outputs.workspaceId
+  }
+}
 // Main Bicep template for ZavaStorefront dev infra
 // Orchestrates all modules
 param resourceGroupName string

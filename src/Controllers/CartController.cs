@@ -7,11 +7,23 @@ namespace ZavaStorefront.Controllers
     {
         private readonly ILogger<CartController> _logger;
         private readonly CartService _cartService;
+        private readonly ContentSafetyService _contentSafetyService;
 
-        public CartController(ILogger<CartController> logger, CartService cartService)
+        public CartController(ILogger<CartController> logger, CartService cartService, ContentSafetyService contentSafetyService)
         {
             _logger = logger;
             _cartService = cartService;
+            _contentSafetyService = contentSafetyService;
+        }
+
+        private async Task<bool> IsUserInputSafeAsync(string userInput)
+        {
+            var (isSafe, log) = await _contentSafetyService.EvaluateTextAsync(userInput);
+            if (!isSafe)
+            {
+                _logger.LogWarning("Blocked unsafe user input: {Log}", log);
+            }
+            return isSafe;
         }
 
         public IActionResult Index()
