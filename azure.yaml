@@ -1,0 +1,35 @@
+# AZD project configuration for ZavaStorefront
+name: zavastorefront-dev
+metadata:
+  template: ZavaStorefront
+  description: Infrastructure and deployment for ZavaStorefront web app (dev)
+  owner: your-team@example.com
+
+infra:
+  provider: bicep
+  path: infra
+
+services:
+  web:
+    project: src/ZavaStorefront.csproj
+    language: dotnet
+    host: appservice
+    docker:
+      path: src/ZavaStorefront.csproj
+      context: src
+      registry: acrmxe36chfff5wk.azurecr.io
+      # The image name will be set by the workflow or azd pipeline
+
+
+# Post-provisioning step to build and push Docker image to ACR
+hooks:
+  postprovision:
+    shell: pwsh
+    run: infra/postprovision-acr-build.ps1
+
+pipeline:
+  provider: github
+  path: .github/workflows/azd-deploy.yml
+
+dotenv:
+  path: .env
