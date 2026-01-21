@@ -1,0 +1,10 @@
+{
+  "cognitiveServicesAccounts": "cog",
+  "containerRegistryRegistries": "cr",
+  "insightsComponents": "appi",
+  "managedIdentityUserAssignedIdentities": "id",
+  "operationalInsightsWorkspaces": "log",
+  "resourcesResourceGroups": "rg-",
+  "webServerFarms": "plan",
+  "webSitesAppService": "app"
+}
