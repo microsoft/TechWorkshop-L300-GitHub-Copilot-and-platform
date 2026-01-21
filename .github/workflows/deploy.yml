@@ -1,0 +1,43 @@
+name: Build and Deploy to Azure
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v3
+      with:
+        dotnet-version: '6.0.x'
+
+    - name: Build .NET app
+      run: dotnet publish src/ZavaStorefront.csproj -c Release -o ./publish
+
+    - name: Login to Azure
+      uses: azure/login@v1
+      with:
+        creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+    - name: Login to ACR
+      uses: azure/docker-login@v1
+      with:
+        login-server: ${{ vars.AZURE_CONTAINER_REGISTRY }}.azurecr.io
+        username: ${{ fromJSON(secrets.AZURE_CREDENTIALS).clientId }}
+        password: ${{ fromJSON(secrets.AZURE_CREDENTIALS).clientSecret }}
+
+    - name: Build and push Docker image
+      run: |
+        docker build -t ${{ vars.AZURE_CONTAINER_REGISTRY }}.azurecr.io/zavastorefront:${{ github.sha }} -t ${{ vars.AZURE_CONTAINER_REGISTRY }}.azurecr.io/zavastorefront:latest ./src
+        docker push ${{ vars.AZURE_CONTAINER_REGISTRY }}.azurecr.io/zavastorefront:${{ github.sha }}
+        docker push ${{ vars.AZURE_CONTAINER_REGISTRY }}.azurecr.io/zavastorefront:latest
+
+    - name: Restart App Service
+      run: az webapp restart --name ${{ vars.AZURE_APP_SERVICE_NAME }} --resource-group ${{ vars.AZURE_RESOURCE_GROUP }}
