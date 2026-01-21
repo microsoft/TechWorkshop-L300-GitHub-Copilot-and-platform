@@ -38,7 +38,7 @@ jobs:
             --registry ${{ vars.AZURE_CONTAINER_REGISTRY }} \
             --image web:${{ github.sha }} \
             --image web:latest \
-            --file Dockerfile \
+            --file src/Dockerfile \
             .
 
       - name: Deploy to App Service
