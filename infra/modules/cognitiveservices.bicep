@@ -56,10 +56,10 @@ resource cognitiveServicesUserRoleAssignmentAppService 'Microsoft.Authorization/
   }
 }
 
-// GPT-4 Model Deployment
-resource gpt4Deployment 'Microsoft.CognitiveServices/accounts/deployments@2024-04-01-preview' = {
+// GPT-4o Model Deployment (replaces deprecated GPT-4 0613)
+resource gpt4oDeployment 'Microsoft.CognitiveServices/accounts/deployments@2024-04-01-preview' = {
   parent: cognitiveServices
-  name: 'gpt-4'
+  name: 'gpt-4o'
   sku: {
     name: 'Standard'
     capacity: 10
@@ -67,17 +67,17 @@ resource gpt4Deployment 'Microsoft.CognitiveServices/accounts/deployments@2024-0
   properties: {
     model: {
       format: 'OpenAI'
-      name: 'gpt-4'
-      version: '0613'
+      name: 'gpt-4o'
+      version: '2024-11-20'
     }
     raiPolicyName: 'Microsoft.Default'
   }
 }
 
-// Phi Model Deployment
-resource phiDeployment 'Microsoft.CognitiveServices/accounts/deployments@2024-04-01-preview' = {
+// GPT-4o-mini Model Deployment (cost-effective alternative)
+resource gpt4oMiniDeployment 'Microsoft.CognitiveServices/accounts/deployments@2024-04-01-preview' = {
   parent: cognitiveServices
-  name: 'phi-3-mini'
+  name: 'gpt-4o-mini'
   sku: {
     name: 'Standard'
     capacity: 10
@@ -85,13 +85,13 @@ resource phiDeployment 'Microsoft.CognitiveServices/accounts/deployments@2024-04
   properties: {
     model: {
       format: 'OpenAI'
-      name: 'phi-3-mini-128k-instruct'
-      version: '1'
+      name: 'gpt-4o-mini'
+      version: '2024-07-18'
     }
     raiPolicyName: 'Microsoft.Default'
   }
   dependsOn: [
-    gpt4Deployment
+    gpt4oDeployment
   ]
 }
 
