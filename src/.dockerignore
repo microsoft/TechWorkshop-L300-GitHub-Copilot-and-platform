@@ -1,0 +1,33 @@
+# Exclude version control
+.git
+.gitignore
+
+# Exclude documentation and non-essential files
+*.md
+LICENSE
+
+# Exclude build outputs that shouldn't be in build context
+bin/
+obj/
+out/
+
+# Exclude IDE files
+.vscode/
+.vs/
+*.user
+*.suo
+
+# Exclude OS files
+Thumbs.db
+.DS_Store
+
+# Exclude temp files
+*.tmp
+*.temp
+
+# Exclude logs
+*.log
+logs/
+
+# Exclude packages
+packages/
