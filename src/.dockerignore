@@ -1,0 +1,11 @@
+**/.git
+**/.gitignore
+**/.dockerignore
+**/bin
+**/obj
+**/.vs
+**/.vscode
+**/node_modules
+**/npm-debug.log
+**/.DS_Store
+**/Thumbs.db
