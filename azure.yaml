@@ -1,0 +1,53 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/Azure/azure-dev/main/schemas/v1.0/azure.yaml.json
+# =============================================================================
+# Azure Developer CLI (AZD) Configuration for ZavaStorefront
+# =============================================================================
+# This file configures the Azure Developer CLI for deploying and managing
+# the ZavaStorefront web application on Azure.
+# =============================================================================
+
+name: zavastore
+
+metadata:
+  template: azd-init
+
+services:
+  web:
+    project: ./src
+    language: csharp
+    host: appservice
+    docker:
+      path: ./src/Dockerfile
+      context: ./src
+
+infra:
+  provider: bicep
+  path: ./infra
+
+hooks:
+  preprovision:
+    shell: sh
+    run: |
+      echo "Preparing to provision Azure infrastructure..."
+      
+  postprovision:
+    shell: sh
+    run: |
+      echo "Azure infrastructure provisioned successfully!"
+      echo "Resource Group: ${AZURE_RESOURCE_GROUP}"
+      echo "Container Registry: ${AZURE_CONTAINER_REGISTRY_NAME}"
+      echo "Web App URL: ${AZURE_WEB_APP_URL}"
+
+  predeploy:
+    shell: sh
+    run: |
+      echo "Building and pushing container image..."
+
+  postdeploy:
+    shell: sh
+    run: |
+      echo "Deployment completed!"
+      echo "Application URL: ${AZURE_WEB_APP_URL}"
+
+pipeline:
+  provider: github

@@ -1,0 +1,70 @@
+# =============================================================================
+# Docker Ignore File for ZavaStorefront
+# =============================================================================
+# Excludes files and directories from the Docker build context
+# =============================================================================
+
+# Build outputs
+**/bin/
+**/obj/
+**/out/
+**/publish/
+
+# IDE and editor files
+.idea/
+.vscode/
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+*.swp
+*~
+
+# Git
+.git/
+.gitignore
+.gitattributes
+
+# Documentation
+*.md
+LICENSE
+docs/
+
+# Test files
+**/[Tt]est*/
+**/[Tt]ests/
+**/*[Tt]est.csproj
+**/*[Tt]ests.csproj
+
+# Infrastructure as Code
+infra/
+azure.yaml
+*.bicep
+*.bicepparam
+
+# Media and assets not needed for build
+media/
+
+# Logs
+*.log
+logs/
+
+# NuGet
+*.nupkg
+**/packages/
+
+# Temporary files
+*.tmp
+*.temp
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Secrets (should never be in image)
+*.pfx
+*.p12
+*.key
+*.pem
+appsettings.*.json
+!appsettings.json
