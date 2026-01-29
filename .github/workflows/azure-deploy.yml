@@ -1,0 +1,175 @@
+name: Deploy ZavaStorefront to Azure
+
+on:
+  push:
+    branches: [ main ]
+    paths: 
+      - 'src/**'
+      - 'infra/**'
+      - '.github/workflows/azure-deploy.yml'
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:
+
+env:
+  AZURE_LOCATION: westus3
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  provision:
+    name: Provision Infrastructure
+    runs-on: ubuntu-latest
+    if: github.event_name != 'pull_request'
+    outputs:
+      acr-name: ${{ steps.provision.outputs.acr-name }}
+      app-name: ${{ steps.provision.outputs.app-name }}
+      resource-group: ${{ steps.provision.outputs.resource-group }}
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Azure Login
+        uses: azure/login@v2
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      - name: Provision Infrastructure with Bicep
+        id: provision
+        run: |
+          echo "Deploying infrastructure to Azure..."
+          
+          DEPLOYMENT_NAME="zavastore-$(date +%Y%m%d-%H%M%S)"
+          
+          az deployment sub create \
+            --name $DEPLOYMENT_NAME \
+            --location ${{ env.AZURE_LOCATION }} \
+            --template-file infra/main.bicep \
+            --parameters infra/main.bicepparam \
+            --output json > deployment-output.json
+          
+          ACR_NAME=$(jq -r '.properties.outputs.AZURE_CONTAINER_REGISTRY_NAME.value' deployment-output.json)
+          APP_NAME=$(jq -r '.properties.outputs.AZURE_APP_SERVICE_NAME.value' deployment-output.json)
+          RG_NAME=$(jq -r '.properties.outputs.AZURE_RESOURCE_GROUP.value' deployment-output.json)
+          
+          echo "acr-name=$ACR_NAME" >> $GITHUB_OUTPUT
+          echo "app-name=$APP_NAME" >> $GITHUB_OUTPUT
+          echo "resource-group=$RG_NAME" >> $GITHUB_OUTPUT
+          
+          echo "✅ Infrastructure provisioned successfully!"
+          echo "📦 ACR: $ACR_NAME"
+          echo "🌐 App Service: $APP_NAME"
+          echo "📁 Resource Group: $RG_NAME"
+
+  build-and-deploy:
+    name: Build & Deploy Application
+    runs-on: ubuntu-latest
+    needs: provision
+    if: github.event_name != 'pull_request'
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Azure Login
+        uses: azure/login@v2
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      - name: Build and Push Container to ACR
+        run: |
+          echo "Building container image in Azure Container Registry..."
+          
+          ACR_NAME="${{ needs.provision.outputs.acr-name }}"
+          IMAGE_TAG="${{ github.sha }}"
+          
+          az acr build \
+            --registry $ACR_NAME \
+            --image zavastore:$IMAGE_TAG \
+            --image zavastore:latest \
+            --file src/Dockerfile \
+            ./src
+          
+          echo "✅ Container image built and pushed successfully!"
+          echo "🏷️  Tags: $IMAGE_TAG, latest"
+
+      - name: Deploy to App Service
+        run: |
+          echo "Deploying to Azure App Service..."
+          
+          APP_NAME="${{ needs.provision.outputs.app-name }}"
+          ACR_NAME="${{ needs.provision.outputs.acr-name }}"
+          IMAGE_TAG="${{ github.sha }}"
+          
+          az webapp config container set \
+            --name $APP_NAME \
+            --resource-group ${{ needs.provision.outputs.resource-group }} \
+            --docker-custom-image-name $ACR_NAME.azurecr.io/zavastore:$IMAGE_TAG \
+            --docker-registry-server-url https://$ACR_NAME.azurecr.io
+          
+          echo "✅ Application deployed successfully!"
+          
+          APP_URL=$(az webapp show --name $APP_NAME --resource-group ${{ needs.provision.outputs.resource-group }} --query defaultHostName -o tsv)
+          echo "🌐 Application URL: https://$APP_URL"
+
+      - name: Deployment Summary
+        run: |
+          echo "## 🚀 Deployment Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "- **Resource Group**: ${{ needs.provision.outputs.resource-group }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Container Registry**: ${{ needs.provision.outputs.acr-name }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **App Service**: ${{ needs.provision.outputs.app-name }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Image Tag**: ${{ github.sha }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Deployment Status**: ✅ Success" >> $GITHUB_STEP_SUMMARY
+
+  validate-pr:
+    name: Validate Pull Request
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Azure Login
+        uses: azure/login@v2
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      - name: Validate Bicep Templates
+        run: |
+          echo "Validating Bicep templates..."
+          
+          az deployment sub validate \
+            --location ${{ env.AZURE_LOCATION }} \
+            --template-file infra/main.bicep \
+            --parameters infra/main.bicepparam
+          
+          echo "✅ Bicep templates are valid!"
+
+      - name: Build Container (Validation Only)
+        run: |
+          echo "Validating container build..."
+          
+          # Install Docker Buildx
+          docker buildx create --use
+          
+          # Build without pushing (validation only)
+          docker buildx build \
+            --platform linux/amd64 \
+            --tag zavastore:pr-${{ github.event.pull_request.number }} \
+            ./src
+          
+          echo "✅ Container builds successfully!"
+
+      - name: PR Validation Summary
+        run: |
+          echo "## ✅ Pull Request Validation" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "- **Bicep Templates**: ✅ Valid" >> $GITHUB_STEP_SUMMARY
+          echo "- **Container Build**: ✅ Success" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "Ready to merge! 🎉" >> $GITHUB_STEP_SUMMARY

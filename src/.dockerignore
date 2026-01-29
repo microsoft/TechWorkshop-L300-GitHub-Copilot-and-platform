@@ -1,0 +1,22 @@
+# Ignore files for Docker build context
+bin/
+obj/
+.vs/
+.vscode/
+*.user
+*.suo
+*.cache
+*.log
+
+# Git files
+.git/
+.gitignore
+.gitattributes
+
+# Documentation
+README.md
+*.md
+
+# Test files
+*Tests/
+*.Tests/

@@ -1,0 +1,61 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/Azure/azure-dev/main/schemas/v1.0/azure.yaml.json
+
+name: zavastore
+metadata:
+  template: zavastore@0.0.1-beta
+
+# Note: We're using App Service, not Container Apps
+# The container build and deployment is handled via Azure CLI separately
+
+hooks:
+  postprovision:
+    windows:
+      shell: pwsh
+      run: |
+        Write-Host ""
+        Write-Host "========================================" -ForegroundColor Green
+        Write-Host "Infrastructure Provisioned Successfully!" -ForegroundColor Green
+        Write-Host "========================================" -ForegroundColor Green
+        Write-Host ""
+        Write-Host "Next Steps:" -ForegroundColor Cyan
+        Write-Host "1. Build and push container image to ACR"
+        Write-Host "2. Deploy the application to App Service"
+        Write-Host ""
+        $acrName = azd env get-value AZURE_CONTAINER_REGISTRY_NAME
+        $appName = azd env get-value AZURE_APP_SERVICE_NAME
+        $rgName = azd env get-value AZURE_RESOURCE_GROUP
+        Write-Host "Commands to run:" -ForegroundColor Yellow
+        Write-Host "  # Build and push image"
+        Write-Host "  az acr build --registry $acrName --image zavastore:latest ./src"
+        Write-Host ""
+        Write-Host "  # Deploy to App Service"
+        Write-Host "  az webapp config container set ``"
+        Write-Host "    --name $appName ``"
+        Write-Host "    --resource-group $rgName ``"
+        Write-Host "    --docker-custom-image-name $acrName.azurecr.io/zavastore:latest"
+        Write-Host ""
+    posix:
+      shell: sh
+      run: |
+        echo ""
+        echo "========================================"
+        echo "Infrastructure Provisioned Successfully!"
+        echo "========================================"
+        echo ""
+        echo "Next Steps:"
+        echo "1. Build and push container image to ACR"
+        echo "2. Deploy the application to App Service"
+        echo ""
+        ACR_NAME=$(azd env get-value AZURE_CONTAINER_REGISTRY_NAME)
+        APP_NAME=$(azd env get-value AZURE_APP_SERVICE_NAME)
+        RG_NAME=$(azd env get-value AZURE_RESOURCE_GROUP)
+        echo "Commands to run:"
+        echo "  # Build and push image"
+        echo "  az acr build --registry $ACR_NAME --image zavastore:latest ./src"
+        echo ""
+        echo "  # Deploy to App Service"
+        echo "  az webapp config container set \\"
+        echo "    --name $APP_NAME \\"
+        echo "    --resource-group $RG_NAME \\"
+        echo "    --docker-custom-image-name $ACR_NAME.azurecr.io/zavastore:latest"
+        echo ""
