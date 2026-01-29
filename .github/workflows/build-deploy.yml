@@ -15,6 +15,10 @@ env:
   ACR_LOGIN_SERVER: ${{ vars.ACR_LOGIN_SERVER }}
   IMAGE_NAME: zavastorefront
 
+permissions:
+  id-token: write
+  contents: read
+
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
