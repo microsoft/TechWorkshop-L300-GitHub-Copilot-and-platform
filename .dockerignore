@@ -1,0 +1,34 @@
+# Git
+.git
+.gitignore
+
+# Build results
+**/bin/
+**/obj/
+**/out/
+
+# IDE
+.vs/
+.vscode/
+*.user
+*.suo
+
+# Documentation
+docs/
+media/
+*.md
+!README.md
+
+# Misc
+**/*.log
+**/node_modules/
+.dockerignore
+Dockerfile*
+
+# Infrastructure
+infra/
+azure.yaml
+
+# Test files
+**/*Tests/
+**/*.Tests.csproj
