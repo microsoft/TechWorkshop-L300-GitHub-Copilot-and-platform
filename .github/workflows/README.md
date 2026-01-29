@@ -32,7 +32,8 @@ Use `username` for `ACR_USERNAME` and one of the passwords for `ACR_PASSWORD`.
 
 Configure these in **Settings → Secrets and variables → Actions → Variables**:
 
-| Variable | Example |
-|----------|---------|
-| `AZURE_WEBAPP_NAME` | `app-zavastore-dev` |
-| `ACR_LOGIN_SERVER` | `crzavastore.azurecr.io` |
+| Variable | Value |
+|----------|-------|
+| `AZURE_CONTAINERAPP_NAME` | `src` |
+| `AZURE_RESOURCE_GROUP` | `rg-dev` |
+| `ACR_LOGIN_SERVER` | `cr7vf5iie4drbiw.azurecr.io` |
