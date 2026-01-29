@@ -5,9 +5,9 @@ on:
     branches: [main]
     paths:
       - 'src/**'
-      - '.github/workflows/build-deploy.yml
+      - '.github/workflows/build-deploy.yml'
   pull_request:
-   branches: [ '*' ]
+    branches: [ '*' ]
   workflow_dispatch:
 
 env:
