@@ -150,6 +150,7 @@ module webApp 'br/public:avm/res/web/site:0.15.1' = {
       linuxFxVersion: 'DOCKER|mcr.microsoft.com/appsvc/staticsite:latest'
       ftpsState: 'FtpsOnly'
       minTlsVersion: '1.2'
+      acrUseManagedIdentityCreds: true
       appSettings: [
         {
           name: 'WEBSITES_ENABLE_APP_SERVICE_STORAGE'
