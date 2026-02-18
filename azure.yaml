@@ -1,0 +1,32 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/Azure/azure-dev/main/schemas/v1.0/azure.yaml.json
+
+name: ZavaStorefront
+metadata:
+  template: ZavaStorefront-Infrastructure
+
+services:
+  web:
+    project: ./src/ZavaStorefront.csproj
+    language: csharp
+    host: appservice
+    docker:
+      path: ./Dockerfile
+      context: .
+
+infra:
+  provider: bicep
+  path: infra
+  module: main
+
+hooks:
+  postprovision:
+    windows:
+      shell: pwsh
+      run: |
+        Write-Host "Infrastructure provisioned successfully!"
+        Write-Host "App Service URL: $(azd env get-values --output json | ConvertFrom-Json | Select-Object -ExpandProperty APP_SERVICE_URL)"
+    posix:
+      shell: sh
+      run: |
+        echo "Infrastructure provisioned successfully!"
+        echo "App Service URL: $(azd env get-values --output json | jq -r '.APP_SERVICE_URL')"
