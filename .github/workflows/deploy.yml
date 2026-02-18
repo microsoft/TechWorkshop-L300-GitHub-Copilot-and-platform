@@ -1,0 +1,39 @@
+name: Build and Deploy Container
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+    
+    - name: Azure Login
+      uses: azure/login@v1
+      with:
+        creds: ${{ secrets.AZURE_CREDENTIALS }}
+    
+    - name: Build and push container image
+      run: |
+        az acr build \
+          --registry ${{ secrets.ACR_NAME }} \
+          --image zavastore:${{ github.sha }} \
+          --image zavastore:latest \
+          --file src/Dockerfile \
+          src/
+    
+    - name: Deploy to App Service
+      run: |
+        az webapp config container set \
+          --name ${{ secrets.WEBAPP_NAME }} \
+          --resource-group ${{ secrets.RESOURCE_GROUP_NAME }} \
+          --docker-custom-image-name ${{ secrets.ACR_NAME }}.azurecr.io/zavastore:${{ github.sha }}
+        
+        az webapp restart \
+          --name ${{ secrets.WEBAPP_NAME }} \
+          --resource-group ${{ secrets.RESOURCE_GROUP_NAME }}

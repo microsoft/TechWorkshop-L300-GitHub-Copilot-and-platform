@@ -2,7 +2,7 @@
 
 ## .NET Commands
 
-When running any dotnet commands in the terminal, always prefix them with the PATH export:
+When running any dotnet commands in the terminal locally on macOS, always prefix them with the PATH export:
 
 ```bash
 export PATH="$HOME/.dotnet:$PATH" && dotnet <command>
