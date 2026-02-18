@@ -144,3 +144,7 @@ desktop.ini
 !/.gitattributes
 !/.gitignore
 .DS_Store
+
+# Azure Developer CLI
+.azure/
+*.env
