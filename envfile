@@ -1,0 +1,1 @@
+export PATH="$HOME/.dotnet:$PATH" && dotnet --list-sdks
