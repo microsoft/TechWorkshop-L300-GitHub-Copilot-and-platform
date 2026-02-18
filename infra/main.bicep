@@ -50,7 +50,7 @@ var appInsightsName = 'appi-zavastore-${environmentName}-${location}'
 var logAnalyticsName = 'log-zavastore-${environmentName}-${location}'
 var foundryName = 'mlw-zavastore-${environmentName}-${location}'
 var storageAccountName = 'stzavastore${resourceToken}'
-var keyVaultName = 'kv-zavastore-${resourceToken}'
+var keyVaultName = 'kv-zava-${resourceToken}'
 
 // Create Resource Group
 resource resourceGroup 'Microsoft.Resources/resourceGroups@2023-07-01' = {

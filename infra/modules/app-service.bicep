@@ -52,7 +52,9 @@ resource appServicePlan 'Microsoft.Web/serverfarms@2022-09-01' = {
 resource webApp 'Microsoft.Web/sites@2022-09-01' = {
   name: webAppName
   location: location
-  tags: tags
+  tags: union(tags, {
+    'azd-service-name': 'web'
+  })
   kind: 'app,linux,container'
   identity: {
     type: 'SystemAssigned'
