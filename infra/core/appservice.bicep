@@ -16,9 +16,6 @@ param containerRegistryName string
 @description('Application Insights connection string')
 param applicationInsightsConnectionString string
 
-@description('Principal ID for role assignment')
-param principalId string
-
 // Get reference to existing Container Registry
 resource containerRegistry 'Microsoft.ContainerRegistry/registries@2023-01-01-preview' existing = {
   name: containerRegistryName

@@ -9,9 +9,6 @@ param environmentName string
 @description('Primary location for all resources')
 param location string
 
-@description('Id of the user or app to assign application roles')
-param principalId string = ''
-
 // Tags that will be applied to all resources
 var tags = {
   'azd-env-name': environmentName
@@ -19,7 +16,7 @@ var tags = {
 }
 
 // Organize resources in a single resource group
-resource rg resource 'Microsoft.Resources/resourceGroups@2021-04-01' = {
+resource rg 'Microsoft.Resources/resourceGroups@2021-04-01' = {
   name: 'rg-${environmentName}'
   location: location
   tags: tags
@@ -75,7 +72,6 @@ module appService 'core/appservice.bicep' = {
     appServicePlanId: appServicePlan.outputs.id
     containerRegistryName: containerRegistry.outputs.name
     applicationInsightsConnectionString: monitoring.outputs.connectionString
-    principalId: principalId
   }
 }
 
