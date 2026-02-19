@@ -48,10 +48,5 @@ resource webApp 'Microsoft.Web/sites@2023-12-01' = {
   }
 }
 
-resource appInsightsExtension 'Microsoft.Web/sites/siteextensions@2023-12-01' = {
-  name: 'ApplicationInsightsAgent'
-  parent: webApp
-}
-
 output id string = webApp.id
 output principalId string = webApp.identity.principalId
