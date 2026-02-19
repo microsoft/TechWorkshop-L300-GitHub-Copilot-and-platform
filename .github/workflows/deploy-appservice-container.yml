@@ -1,0 +1,51 @@
+name: Build and deploy container to App Service
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:
+
+permissions:
+  id-token: write
+  contents: read
+
+env:
+  WEBAPP_NAME: ${{ vars.AZURE_WEBAPP_NAME }}
+  RESOURCE_GROUP: ${{ vars.AZURE_RESOURCE_GROUP }}
+  ACR_NAME: ${{ vars.ACR_NAME }}
+  IMAGE_NAME: ${{ vars.CONTAINER_IMAGE_NAME || 'zavastorefront' }}
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Azure login (OIDC)
+        uses: azure/login@v2
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
+      - name: Build and push image
+        run: |
+          ACR_LOGIN_SERVER="${ACR_NAME}.azurecr.io"
+          IMAGE_TAG="${GITHUB_SHA}"
+          IMAGE_REF="${ACR_LOGIN_SERVER}/${IMAGE_NAME}:${IMAGE_TAG}"
+
+          az acr login --name "${ACR_NAME}"
+          docker build -f src/Dockerfile -t "${IMAGE_REF}" src
+          docker push "${IMAGE_REF}"
+
+          echo "IMAGE_REF=${IMAGE_REF}" >> "$GITHUB_ENV"
+
+      - name: Point App Service to new image
+        run: |
+          az webapp config set \
+            --name "${WEBAPP_NAME}" \
+            --resource-group "${RESOURCE_GROUP}" \
+            --linux-fx-version "DOCKER|${IMAGE_REF}"

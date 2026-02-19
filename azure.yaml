@@ -1,0 +1,16 @@
+name: zavastorefront
+metadata:
+  template: zavastorefront-appservice-acr
+
+infra:
+  provider: bicep
+  path: infra
+
+services:
+  ZavaStorefront:
+    project: ./src
+    host: appservice
+    language: dotnet
+    docker:
+      path: ./src/Dockerfile
+    resourceName: ${ZavaStorefront_NAME}
