@@ -15,10 +15,6 @@ param targetResourceId string
 ])
 param principalType string = 'ServicePrincipal'
 
-// Extract resource type and name from resource ID for proper scoping
-var resourceIdParts = split(targetResourceId, '/')
-var resourceType = '${resourceIdParts[6]}/${resourceIdParts[7]}'
-
 resource roleAssignment 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
   name: guid(principalId, roleDefinitionId, targetResourceId)
   scope: resourceGroup()

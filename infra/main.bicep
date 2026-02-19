@@ -152,7 +152,7 @@ module aiHub './modules/aiHub.bicep' = {
     aiHubName: aiHubName
     location: location
     displayName: 'ZavaStorefront AI Hub'
-    description: 'AI Hub for ZavaStorefront with GPT-4 and Phi models in ${location}'
+    hubDescription: 'AI Hub for ZavaStorefront with GPT-4 and Phi models in ${location}'
     storageAccountId: storageAccount.outputs.storageAccountId
     keyVaultId: keyVault.outputs.keyVaultId
     appInsightsId: appInsights.outputs.appInsightsId

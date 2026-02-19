@@ -8,7 +8,7 @@ param location string = resourceGroup().location
 param displayName string = 'ZavaStorefront AI Hub'
 
 @description('Description for the AI Hub')
-param description string = 'AI Hub for ZavaStorefront application with GPT-4 and Phi models'
+param hubDescription string = 'AI Hub for ZavaStorefront application with GPT-4 and Phi models'
 
 @description('Tags to apply to the resource')
 param tags object = {}
@@ -32,7 +32,7 @@ resource aiHub 'Microsoft.MachineLearningServices/workspaces@2024-04-01' = {
   }
   properties: {
     friendlyName: displayName
-    description: description
+    description: hubDescription
     storageAccount: !empty(storageAccountId) ? storageAccountId : null
     keyVault: !empty(keyVaultId) ? keyVaultId : null
     applicationInsights: !empty(appInsightsId) ? appInsightsId : null
