@@ -1,0 +1,17 @@
+name: zavastorefront
+
+infra:
+  provider: bicep
+  path: infra
+
+services:
+  web:
+    project: ./src
+    language: dotnet
+    host: appservice
+
+hooks:
+  predeploy:
+    shell: pwsh
+    run: ./scripts/build-image.ps1
+    continueOnError: false
