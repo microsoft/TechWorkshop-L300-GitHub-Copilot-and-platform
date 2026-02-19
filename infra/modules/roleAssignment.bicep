@@ -15,9 +15,14 @@ param targetResourceId string
 ])
 param principalType string = 'ServicePrincipal'
 
+// Reference the existing resource to properly scope the role assignment
+resource targetResource 'Microsoft.ContainerRegistry/registries@2023-07-01' existing = {
+  name: last(split(targetResourceId, '/'))
+}
+
 resource roleAssignment 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
   name: guid(principalId, roleDefinitionId, targetResourceId)
-  scope: resourceGroup()
+  scope: targetResource
   properties: {
     roleDefinitionId: subscriptionResourceId('Microsoft.Authorization/roleDefinitions', roleDefinitionId)
     principalId: principalId
