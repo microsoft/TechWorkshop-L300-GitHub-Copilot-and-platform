@@ -1,0 +1,24 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/Azure/azure-dev/main/schemas/v1.0/azure.yaml.json
+
+name: zavastore
+metadata:
+  template: zavastore@0.0.1-beta
+
+services:
+  web:
+    language: dotnet
+    project: ./src
+    host: containerapp
+    docker:
+      path: ./Dockerfile
+      context: ./src
+
+# Azure resources provisioning using Bicep
+infra:
+  provider: bicep
+  path: infra
+  module: main
+
+# Pipeline configuration
+pipeline:
+  provider: github
