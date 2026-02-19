@@ -2,6 +2,10 @@
 
 This lab guides you through a series of practical exercises focused on modernising Zava's business applications and databases by migrating everything to Azure, leveraging GitHub Enterprise, Copilot, and Azure services. Each exercise is designed to deliver hands-on experience in governance, automation, security, AI integration, and observability, ensuring Zava’s transition to Azure is robust, secure, and future-ready.
 
+## Deployment Workflow
+
+[![Deploy container to App Service](https://github.com/paulduffett/TechWorkshop-L300-GitHub-Copilot-and-platform/actions/workflows/deploy-appservice-container.yml/badge.svg)](https://github.com/paulduffett/TechWorkshop-L300-GitHub-Copilot-and-platform/actions/workflows/deploy-appservice-container.yml)
+
 ## Contributing
 
 This project welcomes contributions and suggestions.  Most contributions require you to agree to a

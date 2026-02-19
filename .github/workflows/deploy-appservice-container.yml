@@ -1,0 +1,63 @@
+name: Deploy container to App Service
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+    paths:
+      - 'src/**'
+      - '.github/workflows/deploy-appservice-container.yml'
+
+permissions:
+  id-token: write
+  contents: read
+
+env:
+  AZURE_RESOURCE_GROUP: ${{ vars.AZURE_RESOURCE_GROUP }}
+  AZURE_WEBAPP_NAME: ${{ vars.AZURE_WEBAPP_NAME }}
+  AZURE_ACR_NAME: ${{ vars.AZURE_ACR_NAME }}
+  IMAGE_NAME: ${{ vars.IMAGE_NAME || 'zavastorefront' }}
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Azure login (OIDC)
+        uses: azure/login@v2
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
+      - name: Build and push image to ACR
+        run: |
+          az acr build \
+            --registry "$AZURE_ACR_NAME" \
+            --image "$IMAGE_NAME:${{ github.sha }}" \
+            --file src/Dockerfile \
+            src
+
+      - name: Get ACR login server
+        id: acr
+        run: |
+          echo "loginServer=$(az acr show --name \"$AZURE_ACR_NAME\" --query loginServer -o tsv)" >> "$GITHUB_OUTPUT"
+
+      - name: Deploy image to App Service container
+        run: |
+          az webapp config container set \
+            --resource-group "$AZURE_RESOURCE_GROUP" \
+            --name "$AZURE_WEBAPP_NAME" \
+            --container-image-name "${{ steps.acr.outputs.loginServer }}/$IMAGE_NAME:${{ github.sha }}"
+
+          az webapp config appsettings set \
+            --resource-group "$AZURE_RESOURCE_GROUP" \
+            --name "$AZURE_WEBAPP_NAME" \
+            --settings WEBSITES_PORT=8080
+
+          az webapp restart \
+            --resource-group "$AZURE_RESOURCE_GROUP" \
+            --name "$AZURE_WEBAPP_NAME"
