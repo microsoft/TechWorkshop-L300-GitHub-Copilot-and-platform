@@ -8,6 +8,9 @@ on:
     paths:
       - 'src/**'
       - '.github/workflows/deploy-appservice-container.yml'
+  pull_request:
+   branches: [ '*' ]
+  workflow_dispatch: 
 
 permissions:
   id-token: write
