@@ -1,0 +1,72 @@
+name: Build and Deploy to Azure
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  id-token: write
+  contents: read
+
+env:
+  AZURE_WEBAPP_NAME: 'app-zavastore-dev-westus3'    # Set to your App Service name
+  ACR_NAME: 'crzavastoredev'                         # Set to your ACR name (without .azurecr.io)
+  IMAGE_NAME: 'zavastore'
+  DOCKER_FILE_PATH: './Dockerfile'
+  SRC_PATH: './src'
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Azure Login (OIDC)
+        uses: azure/login@v1
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
+      - name: Get ACR login server
+        id: acr-info
+        run: |
+          ACR_LOGIN_SERVER=$(az acr show --name ${{ env.ACR_NAME }} --query loginServer -o tsv)
+          echo "acr_login_server=$ACR_LOGIN_SERVER" >> $GITHUB_OUTPUT
+          echo "✓ ACR Login Server: $ACR_LOGIN_SERVER"
+
+      - name: Build image in ACR (cloud build)
+        run: |
+          echo "Building Docker image in Azure Container Registry..."
+          az acr build \
+            --registry ${{ env.ACR_NAME }} \
+            --image ${{ env.IMAGE_NAME }}:${{ github.sha }} \
+            --image ${{ env.IMAGE_NAME }}:latest \
+            --file ${{ env.DOCKER_FILE_PATH }} \
+            ${{ env.SRC_PATH }}
+          echo "✓ Image built successfully"
+
+      - name: Deploy to Azure App Service
+        uses: azure/webapps-deploy@v2
+        with:
+          app-name: ${{ env.AZURE_WEBAPP_NAME }}
+          images: ${{ steps.acr-info.outputs.acr_login_server }}/${{ env.IMAGE_NAME }}:${{ github.sha }}
+
+      - name: Deployment summary
+        run: |
+          echo "### Deployment Summary :rocket:" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "- **Image**: ${{ env.IMAGE_NAME }}:${{ github.sha }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Registry**: ${{ steps.acr-info.outputs.acr_login_server }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **App Service**: ${{ env.AZURE_WEBAPP_NAME }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **URL**: https://${{ env.AZURE_WEBAPP_NAME }}.azurewebsites.net" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "✅ Deployment completed successfully!" >> $GITHUB_STEP_SUMMARY
+
+      - name: Azure Logout
+        run: az logout
+        if: always()
