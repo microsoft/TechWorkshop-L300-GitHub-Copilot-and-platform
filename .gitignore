@@ -136,6 +136,10 @@ coverage-html/
 # Generated files
 appsettings.*.json
 
+# Bicep compiled ARM templates (build artifacts; AZD compiles Bicep directly)
+infra/main.json
+infra/modules/*.json
+
 # Misc
 Thumbs.db
 desktop.ini
