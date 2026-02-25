@@ -37,9 +37,9 @@ The workflow runs on:
 
 ## PR behavior
 
-- On `pull_request`: workflow validates container build only (no Azure login, no push, no deploy).
-- On `push` to `main` and `workflow_dispatch`: workflow logs in to Azure, pushes to ACR, and deploys to App Service.
+- On `pull_request`: workflow performs full login, build, push to ACR, and App Service deploy.
+- On `push` to `main` and `workflow_dispatch`: workflow also performs full login, build, push, and deploy.
 
-This avoids failures when PR secrets are unavailable (common for fork-based PRs).
+Note: PRs from forks may fail because repository secrets are not exposed to untrusted fork workflows.
 
 _Workflow trigger note: documentation touch update._
