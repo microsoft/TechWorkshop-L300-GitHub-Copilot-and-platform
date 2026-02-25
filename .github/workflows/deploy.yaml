@@ -1,0 +1,64 @@
+name: Build and Deploy to Azure App Service
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:
+
+permissions:
+  id-token: write
+  contents: read
+
+env:
+  IMAGE_NAME: zavastorefront
+  REGISTRY: ${{ vars.ACR_LOGIN_SERVER }}
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Log in to Azure
+        uses: azure/login@v2
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      - name: Log in to Azure Container Registry
+        run: az acr login --name "${{ vars.ACR_NAME }}"
+
+      - name: Create temporary Dockerfile
+        run: |
+          cat > Dockerfile <<'EOF'
+          FROM mcr.microsoft.com/dotnet/sdk:6.0 AS build
+          WORKDIR /src
+          COPY src/ZavaStorefront.csproj ./
+          RUN dotnet restore ZavaStorefront.csproj
+          COPY src/. ./
+          RUN dotnet publish ZavaStorefront.csproj -c Release -o /app/publish
+
+          FROM mcr.microsoft.com/dotnet/aspnet:6.0 AS final
+          WORKDIR /app
+          COPY --from=build /app/publish .
+          ENV ASPNETCORE_URLS=http://+:8080
+          EXPOSE 8080
+          ENTRYPOINT ["dotnet", "ZavaStorefront.dll"]
+          EOF
+
+      - name: Build and push Docker image
+        id: build_push
+        run: |
+          IMAGE_URI="${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.sha }}"
+          docker build -f Dockerfile -t "$IMAGE_URI" .
+          docker push "$IMAGE_URI"
+          echo "image_uri=$IMAGE_URI" >> "$GITHUB_OUTPUT"
+
+      - name: Deploy to Azure App Service
+        uses: azure/webapps-deploy@v3
+        with:
+          app-name: ${{ vars.AZURE_WEBAPP_NAME }}
+          images: ${{ steps.build_push.outputs.image_uri }}
