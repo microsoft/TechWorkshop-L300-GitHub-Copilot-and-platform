@@ -101,7 +101,17 @@ module aiFoundry 'modules/aiFoundry.bicep' = {
     aiProjectName: '${abbrs.aiProject}-zava-${environmentName}-${resourceToken}'
     aiServicesName: '${abbrs.aiServices}-zava-${environmentName}-${resourceToken}'
     location: location
+    logAnalyticsWorkspaceId: logAnalytics.outputs.logAnalyticsId
     tags: tags
+  }
+}
+
+// Grant App Service MI Cognitive Services User role on AI Services (Task 1)
+module aiServicesRoleAssignment 'modules/aiServicesRoleAssignment.bicep' = {
+  name: 'aiServicesRoleAssignment'
+  params: {
+    principalId: appService.outputs.webAppPrincipalId
+    aiServicesId: aiFoundry.outputs.aiServicesId
   }
 }
 

@@ -16,6 +16,9 @@ param location string = resourceGroup().location
 @description('Tags to apply to resources')
 param tags object = {}
 
+@description('Log Analytics workspace ID for diagnostic settings')
+param logAnalyticsWorkspaceId string
+
 // Azure AI Services (multi-service account backing Foundry)
 resource aiServices 'Microsoft.CognitiveServices/accounts@2024-04-01-preview' = {
   name: aiServicesName
@@ -28,6 +31,7 @@ resource aiServices 'Microsoft.CognitiveServices/accounts@2024-04-01-preview' = 
   properties: {
     publicNetworkAccess: 'Enabled'
     customSubDomainName: aiServicesName
+    disableLocalAuth: true  // Enforce identity-only access (no API keys)
   }
 }
 
@@ -102,6 +106,35 @@ resource aiProject 'Microsoft.MachineLearningServices/workspaces@2024-07-01-prev
     friendlyName: aiProjectName
     hubResourceId: aiHub.id
     publicNetworkAccess: 'Enabled'
+  }
+}
+
+// Diagnostic Settings for AI Services (Task 2)
+resource aiServicesDiagnostics 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = {
+  scope: aiServices
+  name: 'aiServicesDiagnostics'
+  properties: {
+    workspaceId: logAnalyticsWorkspaceId
+    logs: [
+      {
+        category: 'Audit'
+        enabled: true
+      }
+      {
+        category: 'RequestResponse'
+        enabled: true
+      }
+      {
+        category: 'Trace'
+        enabled: true
+      }
+    ]
+    metrics: [
+      {
+        category: 'AllMetrics'
+        enabled: true
+      }
+    ]
   }
 }
 
