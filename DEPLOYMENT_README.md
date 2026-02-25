@@ -41,3 +41,5 @@ The workflow runs on:
 - On `push` to `main` and `workflow_dispatch`: workflow logs in to Azure, pushes to ACR, and deploys to App Service.
 
 This avoids failures when PR secrets are unavailable (common for fork-based PRs).
+
+_Workflow trigger note: documentation touch update._
