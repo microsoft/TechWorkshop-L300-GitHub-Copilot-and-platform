@@ -1,0 +1,15 @@
+# Azure Developer CLI configuration
+# Run `azd up` to provision infrastructure and deploy the application.
+
+name: zavastore
+metadata:
+  template: azd-init
+
+services:
+  web:
+    project: ./src
+    language: dotnet
+    host: appservice
+    docker:
+      path: Dockerfile
+      context: .
