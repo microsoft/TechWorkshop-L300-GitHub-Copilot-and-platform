@@ -1,0 +1,13 @@
+name: zavastorefront
+metadata:
+  template: custom-bicep-webapp-container
+
+infra:
+  provider: bicep
+  path: infra
+
+services:
+  zavastorefront:
+    project: ./src
+    language: dotnet
+    host: appservice
