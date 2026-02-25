@@ -1,0 +1,41 @@
+name: Build and Deploy
+
+on:
+  push:
+    branches: [main]
+    paths: [ 'src/**' ]
+  pull_request:
+    branches: [ '*' ]
+  workflow_dispatch:
+
+env:
+  IMAGE_NAME: src
+  REGISTRY: ${{ vars.AZURE_CONTAINER_REGISTRY_NAME }}.azurecr.io
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Login to Azure
+        uses: azure/login@v2
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      - name: Login to ACR
+        run: az acr login --name ${{ vars.AZURE_CONTAINER_REGISTRY_NAME }}
+
+      - name: Build and push container image
+        run: |
+          docker build -t ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.sha }} \
+                       -t ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest \
+                       ./src
+          docker push ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.sha }}
+          docker push ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
+
+      - name: Deploy to App Service
+        uses: azure/webapps-deploy@v3
+        with:
+          app-name: ${{ vars.AZURE_APP_SERVICE_NAME }}
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.sha }}
