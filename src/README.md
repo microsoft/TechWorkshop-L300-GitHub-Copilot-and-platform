@@ -8,6 +8,7 @@ A simple e-commerce storefront application built with .NET 8 ASP.NET MVC.
 - **Shopping Cart**: Add products to cart with session-based storage
 - **Cart Management**: View cart, update quantities, remove items
 - **Checkout**: Simple checkout process that clears cart and shows success message
+- **AI Chat Page**: Send a prompt to a Microsoft Foundry endpoint (Phi-4) and append responses to the conversation text area
 - **Responsive Design**: Mobile-friendly layout using Bootstrap 5
 
 ## Technology Stack
@@ -62,6 +63,21 @@ ZavaStorefront/
    ```
    https://localhost:5001
    ```
+
+## Foundry Chat Configuration
+
+Configure these values in `appsettings.json`, user secrets, or environment variables:
+
+- `FoundryChat:Endpoint` - your deployed Foundry endpoint base URL
+- `FoundryChat:ApiKey` - endpoint key
+- `FoundryChat:Model` - deployed model name (default: `phi-4`)
+- `FoundryChat:ApiVersion` - inference API version (default: `2024-05-01-preview`)
+- `FoundryChat:UseBearerAuth` - set `true` if your endpoint expects `Authorization: Bearer <key>` instead of `api-key`
+
+Environment variable equivalents use double underscores, for example:
+- `FoundryChat__Endpoint`
+- `FoundryChat__ApiKey`
+- `FoundryChat__Model`
 
 ## Product Images
 

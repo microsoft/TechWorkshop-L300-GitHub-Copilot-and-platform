@@ -1,4 +1,5 @@
 using ZavaStorefront.Services;
+using ZavaStorefront.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -18,6 +19,8 @@ builder.Services.AddSession(options =>
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddSingleton<ProductService>();
 builder.Services.AddScoped<CartService>();
+builder.Services.Configure<FoundryChatOptions>(builder.Configuration.GetSection(FoundryChatOptions.SectionName));
+builder.Services.AddHttpClient<FoundryChatService>();
 
 var app = builder.Build();
 
