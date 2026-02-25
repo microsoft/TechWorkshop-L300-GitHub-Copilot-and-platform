@@ -115,6 +115,18 @@ module aiServicesRoleAssignment 'modules/aiServicesRoleAssignment.bicep' = {
   }
 }
 
+// AI Services Observability Workbook (Task 4)
+module workbook 'modules/workbook.bicep' = {
+  name: 'workbook'
+  params: {
+    workbookName: 'wb-zava-${environmentName}-${resourceToken}'
+    location: location
+    logAnalyticsWorkspaceId: logAnalytics.outputs.logAnalyticsId
+    workbookDisplayName: 'AI Services Observability'
+    tags: tags
+  }
+}
+
 // Outputs consumed by AZD and application
 output AZURE_LOCATION string = location
 output AZURE_CONTAINER_REGISTRY_ENDPOINT string = acr.outputs.acrLoginServer
