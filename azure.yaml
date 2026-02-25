@@ -1,0 +1,41 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/Azure/azure-dev/main/schemas/v1.0/azure.yaml.json
+
+name: zava-storefront
+metadata:
+  template: zava-storefront@0.0.1-beta
+
+services:
+  web:
+    project: ./src
+    language: dotnet
+    host: appservice
+    docker:
+      path: ./src/Dockerfile
+      context: ./src
+
+hooks:
+  postprovision:
+    windows:
+      shell: pwsh
+      run: |
+        Write-Host "Infrastructure provisioning completed!"
+        Write-Host "Next steps:"
+        Write-Host "1. Build and push the container image:"
+        Write-Host "   az acr build --registry $env:AZURE_CONTAINER_REGISTRY_NAME --image zava-storefront:latest --file src/Dockerfile src/"
+        Write-Host ""
+        Write-Host "2. Deploy the application:"
+        Write-Host "   azd deploy"
+        Write-Host ""
+        Write-Host "Web App URL: $env:AZURE_WEBAPP_URL"
+    posix:
+      shell: sh
+      run: |
+        echo "Infrastructure provisioning completed!"
+        echo "Next steps:"
+        echo "1. Build and push the container image:"
+        echo "   az acr build --registry \$AZURE_CONTAINER_REGISTRY_NAME --image zava-storefront:latest --file src/Dockerfile src/"
+        echo ""
+        echo "2. Deploy the application:"
+        echo "   azd deploy"
+        echo ""
+        echo "Web App URL: \$AZURE_WEBAPP_URL"

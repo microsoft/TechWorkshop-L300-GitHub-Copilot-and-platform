@@ -1,0 +1,18 @@
+<step title="Incoming Request" date="2026-02-25T15:41:01.887" instance="569eb9" url="/api/zipdeploy?isAsync=true" method="POST" type="request" pid="771,1,7" Accept="application/json" Host="app-f3qfwjs22zbmk.scm.azurewebsites.net" User-Agent="azsdk-go-zip-deploy/1.0.0 (go1.25.0 X:loopvar; Windows_NT),azdev/1.23.6 (Go go1.25.0 X:loopvar; windows/amd64)" Accept-Encoding="gzip" Authorization="Bea..." Content-Type="application/octet-stream" Content-Length="4146206" x-ms-correlation-request-id="d2fb07d4e7a12d43f77e19cc85f1e8c0" X-ARR-LOG-ID="d2fb07d4-e7a1-2d43-f77e-19cc85f1e8c0" CLIENT-IP="67.79.17.213:35355" X-SITE-DEPLOYMENT-ID="app-f3qfwjs22zbmk" WAS-DEFAULT-HOSTNAME="app-f3qfwjs22zbmk.scm.azurewebsites.net" X-Forwarded-Proto="https" X-AppService-Proto="https" X-Forwarded-TlsVersion="1.3" X-WAWS-Unencoded-URL="/api/zipdeploy?isAsync=true" X-Client-IP="67.79.17.213" X-Client-Port="35355" >
+  <step title="Cleanup Xml Logs" date="2026-02-25T15:41:01.897" /><!-- duration: 162ms -->
+  <step title="ZipPushDeploy" date="2026-02-25T15:41:02.373" >
+    <step title="ZipDeploy. Extract zip." date="2026-02-25T15:41:02.433" /><!-- duration: 27ms -->
+    <step title="None repository commit" date="2026-02-25T15:41:02.532" >
+      <step title="Commit id: 3a77e123-d04f-420d-a454-f5a8942c80dd" date="2026-02-25T15:41:02.581" Message="N/A" AuthorName="N/A" AuthorEmail="N/A" /><!-- duration: 21ms -->
+    </step><!-- duration: 90ms -->
+    <step title="Starting PushDeployAsync" date="2026-02-25T15:41:02.653" /><!-- duration: 39ms -->
+    <step title="Writing artifact to /tmp/zipdeploy/e4c4a242-8760-451a-b435-b5d556b6a45d.zip" date="2026-02-25T15:41:02.872" >
+      <step title="Writing multipart request body to /tmp/zipdeploy/e4c4a242-8760-451a-b435-b5d556b6a45d.zip" date="2026-02-25T15:41:02.924" /><!-- duration: 70ms -->
+    </step><!-- duration: 956ms -->
+    <step title="Start deployment in the background" date="2026-02-25T15:41:03.950" >
+      <step title="Acquiring Deployment Lock" date="2026-02-25T15:41:04.120" /><!-- duration: 11ms -->
+      <step title="Acquired Deployment Lock" date="2026-02-25T15:41:04.303" /><!-- duration: 20ms -->
+    </step><!-- duration: 1056ms -->
+  </step><!-- duration: 2786ms -->
+  <step title="Outgoing response" date="2026-02-25T15:41:05.208" type="response" statusCode="202" statusText="Accepted" /><!-- duration: 18ms -->
+</step><!-- duration: 3360ms -->

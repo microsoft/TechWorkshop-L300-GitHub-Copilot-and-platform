@@ -5,6 +5,12 @@ var builder = WebApplication.CreateBuilder(args);
 // Add services to the container.
 builder.Services.AddControllersWithViews();
 
+// Add Application Insights telemetry
+builder.Services.AddApplicationInsightsTelemetry();
+
+// Add health checks
+builder.Services.AddHealthChecks();
+
 // Add session support
 builder.Services.AddDistributedMemoryCache();
 builder.Services.AddSession(options =>
@@ -37,6 +43,9 @@ app.UseRouting();
 app.UseSession();
 
 app.UseAuthorization();
+
+// Map health check endpoint
+app.MapHealthChecks("/health");
 
 app.MapControllerRoute(
     name: "default",

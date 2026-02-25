@@ -1,0 +1,55 @@
+name: Build and Deploy to Azure App Service
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  id-token: write
+  contents: read
+
+env:
+  AZURE_WEBAPP_NAME: ${{ vars.AZURE_WEBAPP_NAME }}
+  AZURE_RESOURCE_GROUP: ${{ vars.AZURE_RESOURCE_GROUP }}
+  AZURE_CONTAINER_REGISTRY: ${{ vars.AZURE_CONTAINER_REGISTRY }}
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Azure Login
+        uses: azure/login@v2
+        with:
+          client-id: ${{ vars.AZURE_CLIENT_ID }}
+          tenant-id: ${{ vars.AZURE_TENANT_ID }}
+          subscription-id: ${{ vars.AZURE_SUBSCRIPTION_ID }}
+
+      - name: Build and push container to ACR
+        run: |
+          az acr build \
+            --registry ${{ env.AZURE_CONTAINER_REGISTRY }} \
+            --image zava-storefront:${{ github.sha }} \
+            --image zava-storefront:latest \
+            --file src/Dockerfile \
+            src/
+
+      - name: Deploy to App Service
+        run: |
+          az webapp config container set \
+            --name ${{ env.AZURE_WEBAPP_NAME }} \
+            --resource-group ${{ env.AZURE_RESOURCE_GROUP }} \
+            --docker-custom-image-name ${{ env.AZURE_CONTAINER_REGISTRY }}.azurecr.io/zava-storefront:${{ github.sha }}
+          
+          az webapp restart \
+            --name ${{ env.AZURE_WEBAPP_NAME }} \
+            --resource-group ${{ env.AZURE_RESOURCE_GROUP }}
+
+      - name: Display deployment URL
+        run: |
+          echo "🚀 Application deployed successfully!"
+          echo "URL: https://${{ env.AZURE_WEBAPP_NAME }}.azurewebsites.net"

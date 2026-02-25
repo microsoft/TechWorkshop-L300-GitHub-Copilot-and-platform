@@ -1,0 +1,90 @@
+name: Deploy ZavaStorefront to Azure
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  id-token: write
+  contents: read
+
+env:
+  AZURE_ENV_NAME: zava-storefront-dev
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install azd
+        uses: Azure/setup-azd@v1.0.0
+
+      - name: Log in with Azure (Federated Credentials)
+        if: ${{ vars.AZURE_CLIENT_ID != '' }}
+        run: |
+          azd auth login `
+            --client-id "${{ vars.AZURE_CLIENT_ID }}" `
+            --federated-credential-provider "github" `
+            --tenant-id "${{ vars.AZURE_TENANT_ID }}"
+        shell: pwsh
+
+      - name: Log in with Azure (Client Credentials)
+        if: ${{ vars.AZURE_CLIENT_ID == '' }}
+        run: |
+          $info = $Env:AZURE_CREDENTIALS | ConvertFrom-Json -AsHashtable;
+          Write-Host "::add-mask::$($info.clientSecret)"
+
+          azd auth login `
+            --client-id "$($info.clientId)" `
+            --client-secret "$($info.clientSecret)" `
+            --tenant-id "$($info.tenantId)"
+        shell: pwsh
+        env:
+          AZURE_CREDENTIALS: ${{ secrets.AZURE_CREDENTIALS }}
+
+      - name: Provision Infrastructure
+        run: azd provision --no-prompt
+        env:
+          AZURE_SUBSCRIPTION_ID: ${{ vars.AZURE_SUBSCRIPTION_ID }}
+          AZURE_LOCATION: westus3
+
+      - name: Build and Push Container
+        run: |
+          acrName=$(azd env get-value AZURE_CONTAINER_REGISTRY_NAME)
+          echo "Building and pushing container to $acrName"
+          az acr build \
+            --registry $acrName \
+            --image zava-storefront:${{ github.sha }} \
+            --image zava-storefront:latest \
+            --file src/Dockerfile \
+            src/
+        shell: bash
+
+      - name: Update Web App Container Image
+        run: |
+          webAppName=$(azd env get-value AZURE_WEBAPP_NAME)
+          resourceGroup=$(azd env get-value AZURE_RESOURCE_GROUP)
+          acrLoginServer=$(azd env get-value AZURE_CONTAINER_REGISTRY_ENDPOINT)
+          
+          echo "Updating Web App: $webAppName"
+          az webapp config container set \
+            --name $webAppName \
+            --resource-group $resourceGroup \
+            --docker-custom-image-name "${acrLoginServer}/zava-storefront:${{ github.sha }}"
+          
+          echo "Restarting Web App..."
+          az webapp restart --name $webAppName --resource-group $resourceGroup
+        shell: bash
+
+      - name: Display Deployment Info
+        run: |
+          webAppUrl=$(azd env get-value AZURE_WEBAPP_URL)
+          echo "✅ Deployment completed successfully!"
+          echo "🌐 Application URL: $webAppUrl"
+          echo "📊 Application Insights: Check Azure Portal for monitoring"
+        shell: bash
