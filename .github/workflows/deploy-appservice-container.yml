@@ -1,17 +1,12 @@
 name: Deploy container to Azure Web App
 
 on:
-push:
-   branches: [ main ]
-   paths: [ 'src/**' ]
-pull_request:
-   branches: [ '*' ]
-workflow_dispatch:
-
-  workflow_dispatch:
   push:
-    branches:
-      - main
+    branches: [ main ]
+    paths: [ 'src/**' ]
+  pull_request:
+    branches: [ '*' ]
+  workflow_dispatch:
 
 permissions:
   id-token: write
