@@ -1,0 +1,70 @@
+name: Deploy container to Azure Web App
+
+on:
+  push:
+    branches: [ main ]
+    paths: [ 'src/**' ]
+  pull_request:
+    branches: [ '*' ]
+  workflow_dispatch:
+
+permissions:
+  id-token: write
+  contents: read
+
+env:
+  IMAGE_NAME: zavastorefront
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Azure login (OIDC)
+        uses: azure/login@v2
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      - name: Build image in ACR
+        env:
+          ACR_NAME: ${{ vars.ACR_NAME }}
+        run: |
+          set -euo pipefail
+          TAG="${{ github.sha }}"
+          cat > Dockerfile <<'EOF'
+          FROM mcr.microsoft.com/dotnet/sdk:6.0 AS build
+          WORKDIR /src
+          COPY src/ZavaStorefront.csproj ./
+          RUN dotnet restore ZavaStorefront.csproj
+          COPY src/. ./
+          RUN dotnet publish ZavaStorefront.csproj -c Release -o /app/publish
+
+          FROM mcr.microsoft.com/dotnet/aspnet:6.0
+          WORKDIR /app
+          COPY --from=build /app/publish .
+          ENV ASPNETCORE_URLS=http://+:8080
+          EXPOSE 8080
+          ENTRYPOINT ["dotnet", "ZavaStorefront.dll"]
+          EOF
+
+          az acr build \
+            --registry "$ACR_NAME" \
+            --image "$IMAGE_NAME:$TAG" \
+            --file Dockerfile \
+            .
+
+          echo "IMAGE_TAG=$TAG" >> "$GITHUB_ENV"
+
+      - name: Update Web App container image
+        env:
+          RESOURCE_GROUP: ${{ vars.AZURE_RESOURCE_GROUP }}
+          WEBAPP_NAME: ${{ vars.WEBAPP_NAME }}
+          ACR_NAME: ${{ vars.ACR_NAME }}
+        run: |
+          set -euo pipefail
+          az webapp config container set \
+            --resource-group "$RESOURCE_GROUP" \
+            --name "$WEBAPP_NAME" \
+            --container-image-name "$ACR_NAME.azurecr.io/$IMAGE_NAME:${IMAGE_TAG}"
