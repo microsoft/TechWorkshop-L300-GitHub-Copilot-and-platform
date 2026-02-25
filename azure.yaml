@@ -1,0 +1,17 @@
+# Azure Developer CLI configuration
+# https://learn.microsoft.com/en-us/azure/developer/azure-developer-cli/azd-schema
+
+name: zava-storefront
+
+services:
+  web:
+    project: src
+    language: dotnet
+    host: appservice
+    docker:
+      path: ./Dockerfile
+      context: .
+
+infra:
+  provider: bicep
+  path: infra
