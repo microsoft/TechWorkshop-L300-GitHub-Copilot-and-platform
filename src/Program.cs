@@ -19,6 +19,14 @@ builder.Services.AddHttpContextAccessor();
 builder.Services.AddSingleton<ProductService>();
 builder.Services.AddScoped<CartService>();
 
+// Register named HttpClient for Azure AI Foundry calls
+builder.Services.AddHttpClient("AzureAI", client =>
+{
+    client.Timeout = TimeSpan.FromSeconds(60);
+    client.DefaultRequestHeaders.Accept.Add(
+        new System.Net.Http.Headers.MediaTypeWithQualityHeaderValue("application/json"));
+});
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.

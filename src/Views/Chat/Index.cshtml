@@ -1,0 +1,165 @@
+@{
+    ViewData["Title"] = "Chat";
+}
+
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-8">
+            <h2 class="mb-1">Zava AI Assistant</h2>
+            <p class="text-muted mb-3">Powered by Microsoft Phi-4 &mdash; Ask about products, pricing, or recommendations.</p>
+
+            <div id="chat-container" class="border rounded bg-light p-3 mb-3" style="height: 420px; overflow-y: auto;">
+                <div id="chat-messages">
+                    <div id="placeholder" class="text-center text-muted mt-5 pt-4">
+                        <i class="bi bi-chat-dots" style="font-size: 2.5rem;"></i>
+                        <p class="mt-2">Start a conversation below!</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="input-group mb-1">
+                <input type="text" id="message-input" class="form-control"
+                       placeholder="Type your message..." maxlength="500"
+                       aria-label="Chat message" />
+                <button id="send-btn" class="btn btn-primary" type="button" onclick="sendMessage()">
+                    <i class="bi bi-send-fill"></i> Send
+                </button>
+            </div>
+            <small class="text-muted">Press <kbd>Enter</kbd> to send</small>
+        </div>
+
+        <div class="col-md-4 mt-4 mt-md-0" style="padding-top: 3.5rem;">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h6 class="mb-0"><i class="bi bi-lightbulb-fill me-1"></i> Suggested Questions</h6>
+                </div>
+                <div class="card-body p-2">
+                    <div class="d-grid gap-2">
+                        <button class="btn btn-outline-secondary btn-sm text-start"
+                                onclick="askQuestion('What are your most popular products?')">
+                            What are your most popular products?
+                        </button>
+                        <button class="btn btn-outline-secondary btn-sm text-start"
+                                onclick="askQuestion('Do you have any headphones available?')">
+                            Do you have any headphones?
+                        </button>
+                        <button class="btn btn-outline-secondary btn-sm text-start"
+                                onclick="askQuestion('What products do you have under $50?')">
+                            Products under $50?
+                        </button>
+                        <button class="btn btn-outline-secondary btn-sm text-start"
+                                onclick="askQuestion('What smart home devices do you carry?')">
+                            Smart home devices?
+                        </button>
+                        <button class="btn btn-outline-secondary btn-sm text-start"
+                                onclick="askQuestion('Can you recommend a good laptop?')">
+                            Recommend a laptop?
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+<script>
+    const messageInput = document.getElementById('message-input');
+    const sendBtn = document.getElementById('send-btn');
+    const chatMessages = document.getElementById('chat-messages');
+
+    messageInput.addEventListener('keypress', function (e) {
+        if (e.key === 'Enter' && !sendBtn.disabled) sendMessage();
+    });
+
+    function askQuestion(question) {
+        messageInput.value = question;
+        sendMessage();
+    }
+
+    function clearPlaceholder() {
+        const placeholder = document.getElementById('placeholder');
+        if (placeholder) placeholder.remove();
+    }
+
+    function appendMessage(text, isUser) {
+        clearPlaceholder();
+        const wrapper = document.createElement('div');
+        wrapper.className = 'd-flex mb-3 ' + (isUser ? 'justify-content-end' : 'justify-content-start');
+
+        const bubble = document.createElement('div');
+        bubble.className = 'px-3 py-2 rounded-3 ' + (isUser ? 'bg-primary text-white' : 'bg-white border');
+        bubble.style.maxWidth = '78%';
+        bubble.style.whiteSpace = 'pre-wrap';
+        bubble.style.wordBreak = 'break-word';
+        bubble.innerText = text;
+
+        wrapper.appendChild(bubble);
+        chatMessages.appendChild(wrapper);
+
+        const container = document.getElementById('chat-container');
+        container.scrollTop = container.scrollHeight;
+    }
+
+    function appendTypingIndicator() {
+        clearPlaceholder();
+        const wrapper = document.createElement('div');
+        wrapper.id = 'typing-indicator';
+        wrapper.className = 'd-flex mb-3 justify-content-start';
+        wrapper.innerHTML = '<div class="px-3 py-2 rounded-3 bg-white border text-muted fst-italic">'
+            + '<span class="spinner-grow spinner-grow-sm me-1" role="status"></span>Thinking...</div>';
+        chatMessages.appendChild(wrapper);
+        const container = document.getElementById('chat-container');
+        container.scrollTop = container.scrollHeight;
+    }
+
+    function removeTypingIndicator() {
+        const el = document.getElementById('typing-indicator');
+        if (el) el.remove();
+    }
+
+    function setLoading(loading) {
+        sendBtn.disabled = loading;
+        messageInput.disabled = loading;
+        sendBtn.innerHTML = loading
+            ? '<span class="spinner-border spinner-border-sm"></span>'
+            : '<i class="bi bi-send-fill"></i> Send';
+    }
+
+    async function sendMessage() {
+        const message = messageInput.value.trim();
+        if (!message) return;
+
+        appendMessage(message, true);
+        messageInput.value = '';
+        setLoading(true);
+        appendTypingIndicator();
+
+        try {
+            const response = await fetch('/Chat/SendMessage', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ message })
+            });
+
+            removeTypingIndicator();
+
+            if (!response.ok) {
+                const errText = await response.text();
+                appendMessage('⚠️ ' + (errText || 'Something went wrong. Please try again.'), false);
+                return;
+            }
+
+            const data = await response.json();
+            appendMessage(data.reply, false);
+        } catch (error) {
+            removeTypingIndicator();
+            appendMessage('⚠️ Could not reach the AI service. Please check your connection and try again.', false);
+            console.error(error);
+        } finally {
+            setLoading(false);
+            messageInput.focus();
+        }
+    }
+</script>
+}
