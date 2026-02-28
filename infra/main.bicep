@@ -88,7 +88,7 @@ module aiFoundry 'modules/aifoundry.bicep' = {
     aiHubName: aiHubName
     aiProjectName: aiProjectName
     location: location
-    logAnalyticsWorkspaceId: appInsights.outputs.appInsightsId
+    logAnalyticsWorkspaceId: appInsights.outputs.logAnalyticsWorkspaceId
     tags: tags
   }
 }
