@@ -66,8 +66,10 @@ module webApp 'modules/webapp.bicep' = {
     acrLoginServer: acr.outputs.acrLoginServer
     containerImage: 'zavastore:${containerImageTag}'
     appInsightsConnectionString: appInsights.outputs.appInsightsConnectionString
+    aiServicesEndpoint: aiFoundry.outputs.aiServicesEndpoint
     tags: tags
   }
+  dependsOn: [aiFoundry]
 }
 
 module acrPullRole 'modules/roleassignment.bicep' = {
@@ -75,7 +77,9 @@ module acrPullRole 'modules/roleassignment.bicep' = {
   params: {
     principalId: webApp.outputs.webAppPrincipalId
     acrId: acr.outputs.acrId
+    aiServicesId: aiFoundry.outputs.aiServicesId
   }
+  dependsOn: [aiFoundry]
 }
 
 module aiFoundry 'modules/aifoundry.bicep' = {

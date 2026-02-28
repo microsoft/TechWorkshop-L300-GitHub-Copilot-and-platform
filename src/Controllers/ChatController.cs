@@ -42,13 +42,12 @@ namespace ZavaStorefront.Controllers
             // Try Phi-4 first, fall back to gpt-4o
             var deploymentName = _configuration["AzureAI:DeploymentName"] ?? "phi-4";
             var fallbackDeploymentName = _configuration["AzureAI:FallbackDeploymentName"] ?? "gpt-4o";
-            var apiKey = _configuration["AzureAI:ApiKey"] ?? string.Empty;
 
-            var result = await TrySendToDeployment(endpoint, deploymentName, apiKey, request.Message);
+            var result = await TrySendToDeployment(endpoint, deploymentName, request.Message);
             if (result == null)
             {
                 _logger.LogWarning("Phi-4 deployment failed, falling back to {Fallback}", fallbackDeploymentName);
-                result = await TrySendToDeployment(endpoint, fallbackDeploymentName, apiKey, request.Message);
+                result = await TrySendToDeployment(endpoint, fallbackDeploymentName, request.Message);
             }
 
             if (result == null)
@@ -59,26 +58,17 @@ namespace ZavaStorefront.Controllers
             return Ok(new { reply = result });
         }
 
-        private async Task<string?> TrySendToDeployment(string baseEndpoint, string deploymentName, string apiKey, string userMessage)
+        private async Task<string?> TrySendToDeployment(string baseEndpoint, string deploymentName, string userMessage)
         {
             try
             {
                 var client = _httpClientFactory.CreateClient("AzureAI");
 
-                if (!string.IsNullOrEmpty(apiKey))
-                {
-                    // API key auth
-                    client.DefaultRequestHeaders.Remove("api-key");
-                    client.DefaultRequestHeaders.Add("api-key", apiKey);
-                }
-                else
-                {
-                    // Azure AD token auth — uses az login locally, Managed Identity in Azure
-                    var credential = new DefaultAzureCredential();
-                    var tokenRequest = new TokenRequestContext(new[] { "https://cognitiveservices.azure.com/.default" });
-                    var token = await credential.GetTokenAsync(tokenRequest);
-                    client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token.Token);
-                }
+                // Identity-only: DefaultAzureCredential uses az login locally, Managed Identity in Azure
+                var credential = new DefaultAzureCredential();
+                var tokenRequest = new TokenRequestContext(new[] { "https://cognitiveservices.azure.com/.default" });
+                var token = await credential.GetTokenAsync(tokenRequest);
+                client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token.Token);
 
                 // Azure AI Services OpenAI-compatible endpoint
                 var url = $"{baseEndpoint.TrimEnd('/')}/openai/deployments/{deploymentName}/chat/completions?api-version=2024-05-01-preview";

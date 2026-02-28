@@ -16,6 +16,9 @@ param containerImage string = 'zavastore:latest'
 @description('Application Insights connection string')
 param appInsightsConnectionString string
 
+@description('Azure AI Services endpoint for Microsoft Foundry model calls')
+param aiServicesEndpoint string = ''
+
 @description('Tags to apply to resources')
 param tags object = {}
 
@@ -48,6 +51,18 @@ resource webApp 'Microsoft.Web/sites@2023-01-01' = {
         {
           name: 'WEBSITES_PORT'
           value: '8080'
+        }
+        {
+          name: 'AzureAI__Endpoint'
+          value: aiServicesEndpoint
+        }
+        {
+          name: 'AzureAI__DeploymentName'
+          value: 'phi-4'
+        }
+        {
+          name: 'AzureAI__FallbackDeploymentName'
+          value: 'gpt-4o'
         }
       ]
       alwaysOn: false
