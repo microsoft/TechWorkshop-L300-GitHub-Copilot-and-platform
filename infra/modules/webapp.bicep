@@ -19,6 +19,9 @@ param appInsightsConnectionString string
 @description('Azure AI Services endpoint for Microsoft Foundry model calls')
 param aiServicesEndpoint string = ''
 
+@description('Azure AI Content Safety endpoint')
+param contentSafetyEndpoint string = ''
+
 @description('Tags to apply to resources')
 param tags object = {}
 
@@ -63,6 +66,10 @@ resource webApp 'Microsoft.Web/sites@2023-01-01' = {
         {
           name: 'AzureAI__FallbackDeploymentName'
           value: 'gpt-4o'
+        }
+        {
+          name: 'ContentSafety__Endpoint'
+          value: contentSafetyEndpoint
         }
       ]
       alwaysOn: false

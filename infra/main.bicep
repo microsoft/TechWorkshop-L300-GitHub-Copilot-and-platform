@@ -67,6 +67,7 @@ module webApp 'modules/webapp.bicep' = {
     containerImage: 'zavastore:${containerImageTag}'
     appInsightsConnectionString: appInsights.outputs.appInsightsConnectionString
     aiServicesEndpoint: aiFoundry.outputs.aiServicesEndpoint
+    contentSafetyEndpoint: aiFoundry.outputs.aiServicesEndpoint
     tags: tags
   }
   dependsOn: [aiFoundry]

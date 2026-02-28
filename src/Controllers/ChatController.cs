@@ -1,6 +1,8 @@
+using Azure.AI.ContentSafety;
 using Azure.Core;
 using Azure.Identity;
 using Microsoft.AspNetCore.Mvc;
+using System.Linq;
 using System.Net.Http.Headers;
 using System.Text;
 using System.Text.Json;
@@ -39,6 +41,12 @@ namespace ZavaStorefront.Controllers
                 return StatusCode(503, "AI endpoint is not configured.");
             }
 
+            // Content Safety check before forwarding to the model
+            if (!await IsContentSafeAsync(request.Message))
+            {
+                return Ok(new { reply = "I'm sorry, but I can't respond to that message. Please keep the conversation respectful and on-topic." });
+            }
+
             // Try Phi-4 first, fall back to gpt-4o
             var deploymentName = _configuration["AzureAI:DeploymentName"] ?? "phi-4";
             var fallbackDeploymentName = _configuration["AzureAI:FallbackDeploymentName"] ?? "gpt-4o";
@@ -56,6 +64,48 @@ namespace ZavaStorefront.Controllers
             }
 
             return Ok(new { reply = result });
+        }
+
+        /// <summary>
+        /// Evaluates text against Azure AI Content Safety.
+        /// Returns true if safe, false if any category scores severity >= 2.
+        /// Note: jailbreak detection requires Content Safety API version 2024-02-15-preview
+        /// or later; the 1.0.0 GA SDK covers hate, violence, sexual, and self-harm.
+        /// </summary>
+        private async Task<bool> IsContentSafeAsync(string text)
+        {
+            var safetyEndpoint = _configuration["ContentSafety:Endpoint"];
+            if (string.IsNullOrWhiteSpace(safetyEndpoint))
+            {
+                _logger.LogWarning("ContentSafety:Endpoint not configured — skipping safety check.");
+                return true;
+            }
+
+            try
+            {
+                var client = new ContentSafetyClient(new Uri(safetyEndpoint), new DefaultAzureCredential());
+
+                var analyzeOptions = new AnalyzeTextOptions(text);
+                var response = await client.AnalyzeTextAsync(analyzeOptions);
+
+                foreach (var item in response.Value.CategoriesAnalysis)
+                {
+                    if (item.Severity >= 2)
+                    {
+                        _logger.LogWarning("Content Safety blocked message. Category={Category} Severity={Severity}", item.Category, item.Severity);
+                        return false;
+                    }
+                }
+
+                _logger.LogInformation("Content Safety passed. Categories={Categories}",
+                    string.Join(", ", response.Value.CategoriesAnalysis.Select(c => $"{c.Category}:{c.Severity}")));
+                return true;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Content Safety check failed — allowing request to proceed.");
+                return true; // fail-open to avoid breaking chat if Safety service is unavailable
+            }
         }
 
         private async Task<string?> TrySendToDeployment(string baseEndpoint, string deploymentName, string userMessage)
