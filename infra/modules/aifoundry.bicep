@@ -126,37 +126,17 @@ resource phiDeployment 'Microsoft.CognitiveServices/accounts/deployments@2024-04
 }
 
 // ── Diagnostic Settings ──────────────────────────────────────────────────────
+// Uses categoryGroup 'allLogs' to dynamically capture every available log
+// category without hardcoding names that may vary by region or API version.
 
-// AI Hub diagnostics — all available log categories + metrics
+// AI Hub diagnostics
 resource aiHubDiagnostics 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = {
   name: '${aiHubName}-diagnostics'
   scope: aiHub
   properties: {
     workspaceId: logAnalyticsWorkspaceId
     logs: [
-      { category: 'AmlComputeClusterEvent',        enabled: true }
-      { category: 'AmlComputeClusterNodeEvent',    enabled: true }
-      { category: 'AmlComputeJobEvent',            enabled: true }
-      { category: 'AmlComputeCpuGpuUtilization',   enabled: true }
-      { category: 'AmlRunStatusChangedEvent',      enabled: true }
-      { category: 'ModelsChangeEvent',             enabled: true }
-      { category: 'ModelsReadEvent',               enabled: true }
-      { category: 'ModelsActionEvent',             enabled: true }
-      { category: 'DeploymentReadEvent',           enabled: true }
-      { category: 'DeploymentEventACI',            enabled: true }
-      { category: 'DeploymentEventAKS',            enabled: true }
-      { category: 'InferencingOperationAKS',       enabled: true }
-      { category: 'InferencingOperationACI',       enabled: true }
-      { category: 'EnvironmentChangeEvent',        enabled: true }
-      { category: 'EnvironmentReadEvent',          enabled: true }
-      { category: 'DataLabelChangeEvent',          enabled: true }
-      { category: 'DataLabelReadEvent',            enabled: true }
-      { category: 'DataSetChangeEvent',            enabled: true }
-      { category: 'DataSetReadEvent',              enabled: true }
-      { category: 'RunEvent',                      enabled: true }
-      { category: 'PipelineRunStatusChangedEvent', enabled: true }
-      { category: 'DataStoreEvent',                enabled: true }
-      { category: 'RequestEvent',                  enabled: true }
+      { categoryGroup: 'allLogs', enabled: true }
     ]
     metrics: [
       { category: 'AllMetrics', enabled: true }
@@ -164,36 +144,14 @@ resource aiHubDiagnostics 'Microsoft.Insights/diagnosticSettings@2021-05-01-prev
   }
 }
 
-// AI Project diagnostics — shares the same log categories as the Hub workspace
+// AI Project diagnostics
 resource aiProjectDiagnostics 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = {
   name: '${aiProjectName}-diagnostics'
   scope: aiProject
   properties: {
     workspaceId: logAnalyticsWorkspaceId
     logs: [
-      { category: 'AmlComputeClusterEvent',        enabled: true }
-      { category: 'AmlComputeClusterNodeEvent',    enabled: true }
-      { category: 'AmlComputeJobEvent',            enabled: true }
-      { category: 'AmlComputeCpuGpuUtilization',   enabled: true }
-      { category: 'AmlRunStatusChangedEvent',      enabled: true }
-      { category: 'ModelsChangeEvent',             enabled: true }
-      { category: 'ModelsReadEvent',               enabled: true }
-      { category: 'ModelsActionEvent',             enabled: true }
-      { category: 'DeploymentReadEvent',           enabled: true }
-      { category: 'DeploymentEventACI',            enabled: true }
-      { category: 'DeploymentEventAKS',            enabled: true }
-      { category: 'InferencingOperationAKS',       enabled: true }
-      { category: 'InferencingOperationACI',       enabled: true }
-      { category: 'EnvironmentChangeEvent',        enabled: true }
-      { category: 'EnvironmentReadEvent',          enabled: true }
-      { category: 'DataLabelChangeEvent',          enabled: true }
-      { category: 'DataLabelReadEvent',            enabled: true }
-      { category: 'DataSetChangeEvent',            enabled: true }
-      { category: 'DataSetReadEvent',              enabled: true }
-      { category: 'RunEvent',                      enabled: true }
-      { category: 'PipelineRunStatusChangedEvent', enabled: true }
-      { category: 'DataStoreEvent',                enabled: true }
-      { category: 'RequestEvent',                  enabled: true }
+      { categoryGroup: 'allLogs', enabled: true }
     ]
     metrics: [
       { category: 'AllMetrics', enabled: true }
@@ -201,16 +159,15 @@ resource aiProjectDiagnostics 'Microsoft.Insights/diagnosticSettings@2021-05-01-
   }
 }
 
-// AI Services (Cognitive Services) diagnostics — Audit, RequestResponse, Trace + metrics
+// AI Services (Cognitive Services) diagnostics
 resource aiServicesDiagnostics 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = {
   name: '${aiHubName}-aiservices-diagnostics'
   scope: aiServices
   properties: {
     workspaceId: logAnalyticsWorkspaceId
     logs: [
-      { category: 'Audit',           enabled: true }
-      { category: 'RequestResponse', enabled: true }
-      { category: 'Trace',           enabled: true }
+      { categoryGroup: 'allLogs',  enabled: true }
+      { categoryGroup: 'audit',    enabled: true }
     ]
     metrics: [
       { category: 'AllMetrics', enabled: true }
