@@ -74,12 +74,6 @@ resource appService 'Microsoft.Web/sites@2024-04-01' = {
   }
 }
 
-// App Service Site Extension for Application Insights
-resource siteExtension 'Microsoft.Web/sites/siteextensions@2024-04-01' = {
-  parent: appService
-  name: 'Microsoft.ApplicationInsights.AzureWebSites'
-}
-
 output uri string = 'https://${appService.properties.defaultHostName}'
 output name string = appService.name
 output identityPrincipalId string = appService.identity.principalId

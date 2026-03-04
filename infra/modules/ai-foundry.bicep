@@ -39,37 +39,37 @@ resource aiServices 'Microsoft.CognitiveServices/accounts@2024-10-01' = {
   }
 }
 
-// GPT-4 model deployment
+// GPT-4o model deployment
 resource gpt4Deployment 'Microsoft.CognitiveServices/accounts/deployments@2024-10-01' = {
   parent: aiServices
-  name: 'gpt-4'
+  name: 'gpt-4o'
   sku: {
-    name: 'Standard'
+    name: 'GlobalStandard'
     capacity: gpt4Capacity
   }
   properties: {
     model: {
       format: 'OpenAI'
-      name: 'gpt-4'
-      version: '0613'
+      name: 'gpt-4o'
+      version: '2024-08-06'
     }
     raiPolicyName: 'Microsoft.DefaultV2'
   }
 }
 
-// Phi model deployment (deployed after GPT-4 to avoid conflicts)
+// Phi-4 model deployment (deployed after GPT-4o to avoid conflicts)
 resource phiDeployment 'Microsoft.CognitiveServices/accounts/deployments@2024-10-01' = {
   parent: aiServices
-  name: 'phi-4'
+  name: 'Phi-4'
   sku: {
     name: 'GlobalStandard'
-    capacity: phiCapacity
+    capacity: 1
   }
   properties: {
     model: {
-      format: 'OpenAI'
-      name: 'phi-4'
-      version: '0227'
+      format: 'Microsoft'
+      name: 'Phi-4'
+      version: '7'
     }
     raiPolicyName: 'Microsoft.DefaultV2'
   }
