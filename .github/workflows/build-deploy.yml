@@ -10,6 +10,8 @@ on:
 
 env:
   IMAGE_NAME: zavastore
+  ACR_NAME: acrzavastoresinghhadev
+  WEBAPP_NAME: app-zavastore-singhha-dev
 
 jobs:
   build-and-deploy:
@@ -24,12 +26,12 @@ jobs:
           creds: ${{ secrets.AZURE_CREDENTIALS }}
 
       - name: Log in to ACR
-        run: az acr login --name ${{ vars.ACR_NAME }}
+        run: az acr login --name ${{ env.ACR_NAME }}
 
       - name: Build and push image to ACR
         run: |
           az acr build \
-            --registry ${{ vars.ACR_NAME }} \
+            --registry ${{ env.ACR_NAME }} \
             --image ${{ env.IMAGE_NAME }}:${{ github.sha }} \
             --image ${{ env.IMAGE_NAME }}:latest \
             --file ./src/Dockerfile \
@@ -38,5 +40,5 @@ jobs:
       - name: Deploy to App Service
         uses: azure/webapps-deploy@v3
         with:
-          app-name: ${{ vars.WEBAPP_NAME }}
-          images: ${{ vars.ACR_NAME }}.azurecr.io/${{ env.IMAGE_NAME }}:${{ github.sha }}
+          app-name: ${{ env.WEBAPP_NAME }}
+          images: ${{ env.ACR_NAME }}.azurecr.io/${{ env.IMAGE_NAME }}:${{ github.sha }}
