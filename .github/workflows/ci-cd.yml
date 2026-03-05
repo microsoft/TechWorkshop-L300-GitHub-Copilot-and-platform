@@ -18,8 +18,8 @@ on:
 
 env:
   AZURE_RESOURCE_GROUP: rg-zavastore-dev-swedencentral
-  ACR_NAME: ${{ vars.ACR_NAME }}
-  WEB_APP_NAME: ${{ vars.WEBAPP_NAME }}
+  ACR_NAME: acrzavastoresinghhadev
+  WEB_APP_NAME: app-zavastore-singhha-dev
   IMAGE_NAME: zavastore
 
 jobs:
