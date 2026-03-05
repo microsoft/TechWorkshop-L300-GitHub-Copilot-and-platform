@@ -1,0 +1,42 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/Azure/azure-dev/main/schemas/v1.0/azure.yaml.json
+
+name: zava-storefront
+metadata:
+  template: zava-storefront@0.0.1
+
+# No 'services' block — Docker image is built and pushed to ACR via ACR Build
+# Tasks in the postprovision hook below (no local Docker daemon required).
+
+infra:
+  provider: bicep
+  path: ./infra
+  module: main
+
+hooks:
+  # After infrastructure is provisioned, build and push the Docker image to ACR
+  # using ACR Build Tasks - no local Docker daemon required.
+  postprovision:
+    windows:
+      shell: pwsh
+      run: |
+        az acr build `
+          --registry $env:AZURE_CONTAINER_REGISTRY_NAME `
+          --image "zava-storefront:latest" `
+          --file ./src/Dockerfile `
+          ./src
+        az containerapp update `
+          --name $env:AZURE_CONTAINER_APP_NAME `
+          --resource-group $env:AZURE_RESOURCE_GROUP `
+          --image "$env:AZURE_CONTAINER_REGISTRY_LOGIN_SERVER/zava-storefront:latest"
+    posix:
+      shell: sh
+      run: |
+        az acr build \
+          --registry $AZURE_CONTAINER_REGISTRY_NAME \
+          --image zava-storefront:latest \
+          --file ./src/Dockerfile \
+          ./src
+        az containerapp update \
+          --name $AZURE_CONTAINER_APP_NAME \
+          --resource-group $AZURE_RESOURCE_GROUP \
+          --image "$AZURE_CONTAINER_REGISTRY_LOGIN_SERVER/zava-storefront:latest"
