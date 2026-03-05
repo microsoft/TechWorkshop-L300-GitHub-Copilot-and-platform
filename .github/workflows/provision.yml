@@ -1,0 +1,61 @@
+# Infrastructure Provisioning Workflow
+# Provisions Azure infrastructure using AZD and Bicep
+
+name: Provision Infrastructure
+
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Environment to provision'
+        required: true
+        default: 'dev'
+        type: choice
+        options:
+          - dev
+          - staging
+          - prod
+
+env:
+  AZURE_ENV_NAME: ${{ github.event.inputs.environment || 'dev' }}
+  AZURE_LOCATION: swedencentral
+
+jobs:
+  provision:
+    name: Provision Azure Resources
+    runs-on: ubuntu-latest
+    environment: ${{ github.event.inputs.environment || 'dev' }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install azd
+        uses: Azure/setup-azd@v2
+
+      - name: Azure Login
+        uses: azure/login@v2
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      - name: Log in with Azure (azd)
+        run: |
+          azd auth login \
+            --client-id "${{ fromJson(secrets.AZURE_CREDENTIALS).clientId }}" \
+            --federated-credential-provider "github" \
+            --tenant-id "${{ fromJson(secrets.AZURE_CREDENTIALS).tenantId }}"
+        shell: bash
+
+      - name: Provision Infrastructure
+        run: |
+          azd provision --no-prompt
+        env:
+          AZURE_ENV_NAME: ${{ env.AZURE_ENV_NAME }}
+          AZURE_LOCATION: ${{ env.AZURE_LOCATION }}
+          AZURE_SUBSCRIPTION_ID: ${{ fromJson(secrets.AZURE_CREDENTIALS).subscriptionId }}
+
+      - name: Output deployment info
+        run: |
+          echo "Infrastructure provisioned successfully!"
+          echo "Environment: ${{ env.AZURE_ENV_NAME }}"
+          echo "Location: ${{ env.AZURE_LOCATION }}"

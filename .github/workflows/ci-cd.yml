@@ -1,0 +1,79 @@
+# ZavaStorefront CI/CD Pipeline
+# Builds container image using ACR Build (cloud-side, no local Docker required)
+# Deploys to Azure Web App for Containers
+
+name: Build and Deploy
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'src/**'
+      - '.github/workflows/ci-cd.yml'
+  pull_request:
+    branches: [main]
+    paths:
+      - 'src/**'
+  workflow_dispatch:
+
+env:
+  AZURE_RESOURCE_GROUP: rg-zavastore-dev-swedencentral
+  ACR_NAME: acrzavastoresinghhadev
+  WEB_APP_NAME: app-zavastore-singhha-dev
+  IMAGE_NAME: zavastore
+
+jobs:
+  build:
+    name: Build Container Image
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Azure Login
+        uses: azure/login@v2
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      - name: Build image with ACR Build
+        run: |
+          # Build using ACR Build (cloud-side, no local Docker)
+          az acr build \
+            --registry ${{ env.ACR_NAME }} \
+            --image ${{ env.IMAGE_NAME }}:${{ github.sha }} \
+            --image ${{ env.IMAGE_NAME }}:latest \
+            --file src/Dockerfile \
+            ./src
+
+  deploy:
+    name: Deploy to Azure
+    runs-on: ubuntu-latest
+    needs: build
+    if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+    environment:
+      name: dev
+      url: https://${{ env.WEB_APP_NAME }}.azurewebsites.net
+
+    steps:
+      - name: Azure Login
+        uses: azure/login@v2
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      - name: Deploy to Web App
+        uses: azure/webapps-deploy@v3
+        with:
+          app-name: ${{ env.WEB_APP_NAME }}
+          images: ${{ env.ACR_NAME }}.azurecr.io/${{ env.IMAGE_NAME }}:${{ github.sha }}
+
+      - name: Verify deployment
+        run: |
+          echo "Deployment complete!"
+          echo "App URL: https://${{ env.WEB_APP_NAME }}.azurewebsites.net"
+          
+          # Wait for app to start
+          sleep 30
+          
+          # Health check
+          curl -sf "https://${{ env.WEB_APP_NAME }}.azurewebsites.net" || echo "App may still be starting..."
