@@ -8,19 +8,22 @@ Before the workflow can run successfully, you need to configure the following Gi
 
 ### Required GitHub secrets
 
-1. **AZURE_CREDENTIALS** – Azure service principal credentials for authentication
+1. **AZURE_CLIENT_ID** – The client ID (app ID) of your Azure service principal
+2. **AZURE_TENANT_ID** – The tenant ID of your Azure Active Directory
+3. **AZURE_CLIENT_SECRET** – The client secret of your Azure service principal
+4. **AZURE_SUBSCRIPTION_ID** – Your Azure subscription ID
 
-   To create this secret:
+   To create a service principal and obtain these values:
 
    ```bash
    # Create a service principal with contributor access to your resource group
    az ad sp create-for-rbac --name "github-actions-sp" \
      --role Contributor \
-     --scopes /subscriptions/{subscription-id}/resourceGroups/{resource-group-name} \
-     --json-auth
+     --scopes /subscriptions/{subscription-id}/resourceGroups/{resource-group-name}
    ```
 
-   Copy the entire JSON output and paste it as the value for the `AZURE_CREDENTIALS` secret.
+   The output will contain `appId` (→ `AZURE_CLIENT_ID`), `tenant` (→ `AZURE_TENANT_ID`), and `password` (→ `AZURE_CLIENT_SECRET`).
+   Set `AZURE_SUBSCRIPTION_ID` to your Azure subscription ID.
 
 ### Required GitHub variables
 
