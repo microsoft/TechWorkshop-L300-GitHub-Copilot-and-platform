@@ -4,26 +4,17 @@ The workflow in `.github/workflows/build-deploy.yml` builds a Docker image, push
 
 ## Prerequisites
 
-### 1. Create an Entra ID App Registration with Federated Credentials
+### 1. Create a Service Principal with JSON Credentials
 
 ```bash
-# Create the app registration
-az ad app create --display-name "github-deploy-zavastore"
+# Create a service principal with Contributor access to your resource group
+az ad sp create-for-rbac --name "github-actions-sp" \
+  --role Contributor \
+  --scopes /subscriptions/<SUB_ID>/resourceGroups/rg-zava-labs \
+  --json-auth
 
-# Note the appId from the output, then create a service principal
-az ad sp create --id <APP_ID>
-
-# Grant it Contributor + AcrPush on your resource group
-az role assignment create --assignee <APP_ID> --role Contributor --scope /subscriptions/<SUB_ID>/resourceGroups/rg-zava-labs
+# Grant AcrPush on your resource group
 az role assignment create --assignee <APP_ID> --role AcrPush --scope /subscriptions/<SUB_ID>/resourceGroups/rg-zava-labs
-
-# Add a federated credential for GitHub Actions (replace OWNER/REPO)
-az ad app federated-credential create --id <APP_OBJECT_ID> --parameters '{
-  "name": "github-main",
-  "issuer": "https://token.actions.githubusercontent.com",
-  "subject": "repo:OWNER/TechWorkshop-L300-GitHub-Copilot-and-platform:ref:refs/heads/main",
-  "audiences": ["api://AzureADTokenExchange"]
-}'
 ```
 
 ### 2. Configure GitHub Secrets
@@ -32,9 +23,7 @@ Go to **Settings → Secrets and variables → Actions → Secrets** and add:
 
 | Secret | Value |
 |---|---|
-| `AZURE_CLIENT_ID` | App registration Application (client) ID |
-| `AZURE_TENANT_ID` | Your Entra ID tenant ID |
-| `AZURE_SUBSCRIPTION_ID` | Azure subscription ID |
+| `AZURE_CREDENTIALS` | The entire JSON output from the `az ad sp create-for-rbac` command |
 
 ### 3. Configure GitHub Variables
 
@@ -48,3 +37,5 @@ Go to **Settings → Secrets and variables → Actions → Variables** and add:
 ### 4. Run
 
 Push to `main` or trigger manually from the **Actions** tab.
+
+> **NOTE** The workflow pushes container images to both Azure Container Registry (ACR) and GitHub Container Registry (GHCR). The `packages: write` permission in the workflow enables GHCR pushes. You may see container packages appear under your repository's Packages tab — this is expected.

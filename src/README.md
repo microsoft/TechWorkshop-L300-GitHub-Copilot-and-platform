@@ -1,6 +1,6 @@
 # Zava Storefront - ASP.NET Core MVC
 
-A simple e-commerce storefront application built with .NET 6 ASP.NET MVC.
+A simple e-commerce storefront application built with .NET 9 ASP.NET MVC.
 
 ## Features
 
@@ -12,7 +12,7 @@ A simple e-commerce storefront application built with .NET 6 ASP.NET MVC.
 
 ## Technology Stack
 
-- .NET 6
+- .NET 9
 - ASP.NET Core MVC
 - Bootstrap 5
 - Bootstrap Icons
@@ -27,7 +27,8 @@ ZavaStorefront/
 │   └── CartController.cs       # Cart operations and checkout
 ├── Models/
 │   ├── Product.cs              # Product model
-│   └── CartItem.cs             # Cart item model
+│   ├── CartItem.cs             # Cart item model
+│   └── ErrorViewModel.cs       # Error view model
 ├── Services/
 │   ├── ProductService.cs       # Static product data
 │   └── CartService.cs          # Session-based cart management
@@ -50,7 +51,7 @@ ZavaStorefront/
 
 1. Navigate to the project directory:
    ```bash
-   cd ZavaStorefront
+   cd src
    ```
 
 2. Run the application:
