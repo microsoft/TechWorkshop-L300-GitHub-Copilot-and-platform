@@ -1,0 +1,12 @@
+{
+  "appServicePlan": "asp",
+  "containerRegistry": "acr",
+  "webApp": "app",
+  "applicationInsights": "appi",
+  "logAnalyticsWorkspace": "log",
+  "aiServices": "ai",
+  "resourceGroup": "rg",
+  "managedIdentity": "id",
+  "keyVault": "kv",
+  "storageAccount": "st"
+}

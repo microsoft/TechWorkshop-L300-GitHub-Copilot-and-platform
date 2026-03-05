@@ -1,0 +1,65 @@
+# Azure Developer CLI (azd) configuration for ZavaStorefront
+# Documentation: https://learn.microsoft.com/azure/developer/azure-developer-cli/
+
+name: zava-storefront
+metadata:
+  template: zava-storefront@0.1.0
+
+# Infrastructure configuration
+infra:
+  provider: bicep
+  path: ./infra
+  module: main
+
+# Service definitions
+services:
+  web:
+    project: ./src
+    language: dotnet
+    host: appservice
+    # Docker configuration for ACR builds
+    docker:
+      path: ./src/Dockerfile
+      context: ./src
+      registry: ${AZURE_CONTAINER_REGISTRY_ENDPOINT}
+      image: zavastore
+
+# Hooks for custom deployment steps
+hooks:
+  # Pre-provision hook to validate prerequisites
+  preprovision:
+    shell: pwsh
+    run: |
+      Write-Host "Validating Azure prerequisites..."
+      Write-Host "Target region: swedencentral"
+      
+  # Post-provision hook to display deployment info
+  postprovision:
+    shell: pwsh
+    run: |
+      Write-Host ""
+      Write-Host "=== Deployment Complete ===" -ForegroundColor Green
+      Write-Host "Resource Group: $env:AZURE_RESOURCE_GROUP"
+      Write-Host "Web App URL: $env:AZURE_WEB_APP_URL"
+      Write-Host "ACR: $env:AZURE_CONTAINER_REGISTRY_ENDPOINT"
+      Write-Host ""
+      Write-Host "Next steps:"
+      Write-Host "  1. Build and push container image using: azd deploy"
+      Write-Host "  2. Or use GitHub Actions for CI/CD"
+      Write-Host ""
+
+  # Pre-deploy hook to build container image
+  predeploy:
+    shell: pwsh
+    run: |
+      Write-Host "Building container image using ACR Build..."
+      az acr build `
+        --registry $env:AZURE_CONTAINER_REGISTRY_NAME `
+        --image zavastore:$env:AZURE_ENV_NAME `
+        --image zavastore:latest `
+        --file ./src/Dockerfile `
+        ./src
+
+# Pipeline configuration for CI/CD
+pipeline:
+  provider: github
