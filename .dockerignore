@@ -1,0 +1,17 @@
+**/.git
+**/.gitignore
+**/.vs
+**/.vscode
+**/bin
+**/obj
+**/docs
+**/media
+**/node_modules
+**/README.md
+**/LICENSE
+**/*.md
+.azure/
+infra/
+Gemfile
+Gemfile.lock
+_config.yml

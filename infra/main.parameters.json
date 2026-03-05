@@ -1,0 +1,27 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "location": { "value": "${AZURE_LOCATION}" },
+    "environmentName": { "value": "${AZURE_ENV_NAME}" },
+    "baseName": { "value": "zavastore" },
+
+    "useExistingAcr": { "value": false },
+    "existingAcrName": { "value": "" },
+
+    "useExistingLogAnalytics": { "value": false },
+    "existingLogAnalyticsName": { "value": "" },
+
+    "useExistingAppInsights": { "value": false },
+    "existingAppInsightsName": { "value": "" },
+
+    "useExistingAppServicePlan": { "value": false },
+    "existingAppServicePlanName": { "value": "" },
+
+    "useExistingWebApp": { "value": false },
+    "existingWebAppName": { "value": "" },
+
+    "useExistingAiServices": { "value": false },
+    "existingAiServicesName": { "value": "" }
+  }
+}
