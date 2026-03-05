@@ -1,0 +1,8 @@
+.git
+bin/
+obj/
+.vs/
+.vscode/
+*.user
+*.suo
+.azure
