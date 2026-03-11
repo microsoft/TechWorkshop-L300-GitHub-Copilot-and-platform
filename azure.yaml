@@ -1,0 +1,15 @@
+name: zavastore
+metadata:
+  template: "Azure Developer CLI - Web App for Containers"
+  description: "Deploy ZavaStorefront web application to Azure App Service using Docker"
+  language: "csharp"
+  author: "GitHub Copilot"
+
+services:
+  web:
+    project: "./src"
+    language: "csharp"
+    host: appservice
+
+infra:
+  path: "./infra"
