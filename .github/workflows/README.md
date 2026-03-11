@@ -17,17 +17,18 @@ Add this in Settings -> Secrets and variables -> Actions -> Secrets:
 
 - AZURE_CREDENTIALS: Service principal JSON used by azure/login
 
-Example creation command:
+Create a service principal and grant access to your resource group:
 
 ```bash
 az ad sp create-for-rbac \
   --name "github-zava-deploy" \
   --role Contributor \
-  --scopes /subscriptions/f991d37b-2e46-4fcd-b952-2601da6b0f96/resourceGroups/rg-TechWorkshop-L300-GitHub-Copilot-and-platform-dev \
-  --sdk-auth
+  --scopes /subscriptions/<SUBSCRIPTION_ID>/resourceGroups/<RESOURCE_GROUP>
 ```
 
-Copy the command output JSON into the AZURE_CREDENTIALS secret.
+Then configure a federated credential on that app registration for your GitHub repo/branch (GitHub Actions OpenID Connect).
+
+The workflow uses OIDC login, so do not set AZURE_CREDENTIALS JSON.
 
 ## 3) Run deployment
 

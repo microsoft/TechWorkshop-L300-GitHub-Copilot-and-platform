@@ -1,8 +1,13 @@
 name: Build and Deploy Container to App Service
 
 on:
+  workflow_dispatch:
   push:
-    branches: [ main ]
+    branches:
+      - main
+    paths:
+      - src/**
+      - .github/workflows/deploy-webapp-container.yml
   pull_request:
     branches: [ main ]
     workflow_dispatch:
@@ -12,6 +17,7 @@ on:
 
 permissions:
   contents: read
+  id-token: write
 
 env:
   IMAGE_NAME: zavastorefront
