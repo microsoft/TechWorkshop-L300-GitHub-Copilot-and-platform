@@ -1,0 +1,30 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "environmentName": {
+      "value": "dev"
+    },
+    "location": {
+      "value": "westus3"
+    },
+    "projectName": {
+      "value": "zava"
+    },
+    "imageName": {
+      "value": "zavastorefront"
+    },
+    "imageTag": {
+      "value": "latest"
+    },
+    "appServiceSku": {
+      "value": "B1"
+    },
+    "acrSku": {
+      "value": "Basic"
+    },
+    "aiSku": {
+      "value": "S0"
+    }
+  }
+}
