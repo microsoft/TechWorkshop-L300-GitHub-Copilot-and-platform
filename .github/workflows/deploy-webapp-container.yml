@@ -6,10 +6,6 @@ on:
   pull_request:
     branches: [ main ]
     workflow_dispatch:
-
-  push:
-    branches:
-      - main
     paths:
       - src/**
       - .github/workflows/deploy-webapp-container.yml
