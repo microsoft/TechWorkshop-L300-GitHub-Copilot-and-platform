@@ -38,3 +38,5 @@ This workflow uses service principal client-secret authentication and does not r
 
 - Push to main (changes under src), or
 - Run the workflow manually from Actions -> Build and Deploy Container to App Service.
+
+Note: This workflow intentionally does not run on pull_request events because repository secrets are often unavailable there.
