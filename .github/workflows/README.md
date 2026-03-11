@@ -37,6 +37,7 @@ This workflow uses service principal client-secret authentication and does not r
 ## 3) Run deployment
 
 - Push to main (changes under src), or
+- Open/update a pull request targeting main, or
 - Run the workflow manually from Actions -> Build and Deploy Container to App Service.
 
-Note: This workflow intentionally does not run on pull_request events because repository secrets are often unavailable there.
+Note: On pull_request, the workflow always runs the container build. Deploy runs only when required Azure secrets/variables are available (typically same-repo PRs, not forks).

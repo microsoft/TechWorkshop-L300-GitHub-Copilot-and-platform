@@ -8,17 +8,31 @@ on:
     paths:
       - src/**
       - .github/workflows/deploy-webapp-container.yml
-
-permissions:
-  contents: read
-  id-token: write
+  pull_request:
+    branches:
+      - main
+    paths:
+      - src/**
+      - .github/workflows/deploy-webapp-container.yml
 
 env:
   IMAGE_NAME: zavastorefront
 
 jobs:
-  build-and-deploy:
+  build:
     runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Build container image
+        run: docker build -f src/Dockerfile -t local/$IMAGE_NAME:${{ github.sha }} src
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    if: ${{ secrets.AZURE_CLIENT_ID != '' && secrets.AZURE_TENANT_ID != '' && secrets.AZURE_SUBSCRIPTION_ID != '' && secrets.AZURE_CLIENT_SECRET != '' && vars.ACR_NAME != '' && vars.AZURE_RESOURCE_GROUP != '' && vars.AZURE_WEBAPP_NAME != '' && (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository) }}
 
     steps:
       - name: Checkout
