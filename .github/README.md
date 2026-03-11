@@ -51,4 +51,4 @@ Go to **Settings → Secrets and variables → Actions → Variables** and add:
 
 > **Tip:** After running `azd up`, get the actual resource names from the deployment outputs or the Azure portal.
 
-Test
+Once the required secrets and variables are configured, pushes to `main` (or a manual workflow dispatch) will build and deploy the container image to Azure App Service.
