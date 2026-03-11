@@ -18,6 +18,7 @@ Add this in Settings -> Secrets and variables -> Actions -> Secrets:
 - AZURE_CLIENT_ID: Service principal (app registration) client ID
 - AZURE_TENANT_ID: Microsoft Entra tenant ID
 - AZURE_SUBSCRIPTION_ID: Azure subscription ID
+- AZURE_CLIENT_SECRET: Service principal client secret value
 
 Create a service principal and grant access to your resource group:
 
@@ -25,12 +26,13 @@ Create a service principal and grant access to your resource group:
 az ad sp create-for-rbac \
   --name "github-zava-deploy" \
   --role Contributor \
-  --scopes /subscriptions/<SUBSCRIPTION_ID>/resourceGroups/<RESOURCE_GROUP>
+  --scopes /subscriptions/<SUBSCRIPTION_ID>/resourceGroups/<RESOURCE_GROUP> \
+  --sdk-auth
 ```
 
-Then configure a federated credential on that app registration for your GitHub repo/branch (GitHub Actions OpenID Connect).
+Take the output values and save the following to GitHub Secrets: AZURE_CLIENT_ID, AZURE_TENANT_ID, AZURE_SUBSCRIPTION_ID, and AZURE_CLIENT_SECRET.
 
-The workflow uses OIDC login and does not use AZURE_CREDENTIALS JSON.
+This workflow uses service principal client-secret authentication and does not require a federated credential.
 
 ## 3) Run deployment
 
