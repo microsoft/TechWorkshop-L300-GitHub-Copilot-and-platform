@@ -36,35 +36,13 @@ jobs:
   deploy:
     needs: build
     runs-on: ubuntu-latest
-    if: ${{ github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository }}
+    if: github.event_name != 'pull_request'
 
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Precheck deploy prerequisites
-        id: precheck
-        env:
-          AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
-          AZURE_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
-          AZURE_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
-          AZURE_CLIENT_SECRET: ${{ secrets.AZURE_CLIENT_SECRET }}
-          ACR_NAME: ${{ vars.ACR_NAME }}
-          AZURE_RESOURCE_GROUP: ${{ vars.AZURE_RESOURCE_GROUP }}
-          AZURE_WEBAPP_NAME: ${{ vars.AZURE_WEBAPP_NAME }}
-        run: |
-          can_deploy=true
-          if [ -z "$AZURE_CLIENT_ID" ] || [ -z "$AZURE_TENANT_ID" ] || [ -z "$AZURE_SUBSCRIPTION_ID" ] || [ -z "$AZURE_CLIENT_SECRET" ] || [ -z "$ACR_NAME" ] || [ -z "$AZURE_RESOURCE_GROUP" ] || [ -z "$AZURE_WEBAPP_NAME" ]; then
-            can_deploy=false
-          fi
-          echo "can_deploy=$can_deploy" >> "$GITHUB_OUTPUT"
-
-      - name: Skip deploy summary
-        if: ${{ steps.precheck.outputs.can_deploy != 'true' }}
-        run: echo "Skipping deploy: missing Azure secrets/variables in this run context."
-
       - name: Azure login
-        if: ${{ steps.precheck.outputs.can_deploy == 'true' }}
         env:
           AZURE_CLIENT_SECRET: ${{ secrets.AZURE_CLIENT_SECRET }}
         uses: azure/login@v2
@@ -76,7 +54,6 @@ jobs:
           client-secret: ${{ env.AZURE_CLIENT_SECRET }}
 
       - name: Build and push image to ACR
-        if: ${{ steps.precheck.outputs.can_deploy == 'true' }}
         env:
           ACR_NAME: ${{ vars.ACR_NAME }}
         run: |
@@ -91,7 +68,6 @@ jobs:
           echo "IMAGE_TAG=$IMAGE_TAG" >> $GITHUB_ENV
 
       - name: Point Web App to new image
-        if: ${{ steps.precheck.outputs.can_deploy == 'true' }}
         env:
           RESOURCE_GROUP: ${{ vars.AZURE_RESOURCE_GROUP }}
           WEBAPP_NAME: ${{ vars.AZURE_WEBAPP_NAME }}
@@ -103,7 +79,6 @@ jobs:
             --container-registry-url "https://$ACR_LOGIN_SERVER"
 
       - name: Restart Web App
-        if: ${{ steps.precheck.outputs.can_deploy == 'true' }}
         env:
           RESOURCE_GROUP: ${{ vars.AZURE_RESOURCE_GROUP }}
           WEBAPP_NAME: ${{ vars.AZURE_WEBAPP_NAME }}
