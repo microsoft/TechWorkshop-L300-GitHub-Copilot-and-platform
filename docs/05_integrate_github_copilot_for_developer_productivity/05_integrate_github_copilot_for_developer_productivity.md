@@ -20,7 +20,8 @@ After completing this exercise, you'll be able to:
 - Create a GitHub issue to describe the .NET 6 update requirements
 - Update the code based on the issue description, using Copilot chat inside Visual Studio Code
 - Use Copilot chat to begin implementing a Chatbot feature for the solution
+- Use Copilot Chat context variables (`#`), extension participants (`@`), and slash commands (`/`) to explore and improve code
 
 ## Duration
 
-* **Estimated Time:** 45 minutes
+* **Estimated Time:** 60 minutes
