@@ -9,8 +9,8 @@ on:
       - src/**
       - .github/workflows/deploy-webapp-container.yml
   pull_request:
-    branches: [ main ]
-    workflow_dispatch:
+    branches:
+      - main
     paths:
       - src/**
       - .github/workflows/deploy-webapp-container.yml
@@ -33,7 +33,9 @@ jobs:
       - name: Azure login
         uses: azure/login@v2
         with:
-          creds: ${{ secrets.AZURE_CREDENTIALS }}
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
 
       - name: Build and push image to ACR
         env:

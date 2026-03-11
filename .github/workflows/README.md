@@ -15,7 +15,9 @@ Add these in Settings -> Secrets and variables -> Actions -> Variables:
 
 Add this in Settings -> Secrets and variables -> Actions -> Secrets:
 
-- AZURE_CREDENTIALS: Service principal JSON used by azure/login
+- AZURE_CLIENT_ID: Service principal (app registration) client ID
+- AZURE_TENANT_ID: Microsoft Entra tenant ID
+- AZURE_SUBSCRIPTION_ID: Azure subscription ID
 
 Create a service principal and grant access to your resource group:
 
@@ -28,7 +30,7 @@ az ad sp create-for-rbac \
 
 Then configure a federated credential on that app registration for your GitHub repo/branch (GitHub Actions OpenID Connect).
 
-The workflow uses OIDC login, so do not set AZURE_CREDENTIALS JSON.
+The workflow uses OIDC login and does not use AZURE_CREDENTIALS JSON.
 
 ## 3) Run deployment
 
