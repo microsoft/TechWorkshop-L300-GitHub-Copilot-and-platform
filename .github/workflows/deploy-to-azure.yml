@@ -1,11 +1,9 @@
 name: Build and Deploy to App Service
 
 on:
-  push:
-    branches:
-      - main
-      - dev
   workflow_dispatch:
+    # Disabled: uses AZURE_CREDENTIALS secret (blocked by tenant policy).
+    # Use deploy.yml instead (OIDC authentication).
 
 env:
   REGISTRY: ${{ secrets.ACR_LOGIN_SERVER }}
