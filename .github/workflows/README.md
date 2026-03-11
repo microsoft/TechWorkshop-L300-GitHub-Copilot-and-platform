@@ -23,7 +23,7 @@ Example creation command:
 az ad sp create-for-rbac \
   --name "github-zava-deploy" \
   --role Contributor \
-  --scopes /subscriptions/<SUBSCRIPTION_ID>/resourceGroups/<RESOURCE_GROUP> \
+  --scopes /subscriptions/f991d37b-2e46-4fcd-b952-2601da6b0f96/resourceGroups/rg-TechWorkshop-L300-GitHub-Copilot-and-platform-dev \
   --sdk-auth
 ```
 
