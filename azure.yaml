@@ -1,0 +1,14 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/Azure/azure-dev/main/schemas/v1.0/azure.yaml.json
+
+name: zavastorefront
+metadata:
+    template: custom
+services:
+    web:
+        project: src
+        language: dotnet
+        host: containerapp
+        docker:
+            remoteBuild: true
+        infra:
+            path: infra
