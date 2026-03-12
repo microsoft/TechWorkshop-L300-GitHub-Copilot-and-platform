@@ -1,0 +1,17 @@
+# Azure Developer CLI configuration
+# https://learn.microsoft.com/en-us/azure/developer/azure-developer-cli/azd-schema
+
+name: zava-storefront
+
+services:
+  web:
+    project: ./src
+    language: csharp
+    host: appservice
+    docker:
+      path: ../Dockerfile   # relative to project dir (./src) → repo-root Dockerfile
+      context: .            # relative to project dir (./src) → src/ is the build context
+
+infra:
+  provider: bicep
+  path: infra
