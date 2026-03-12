@@ -1,0 +1,80 @@
+name: Build and Deploy Container to App Service
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    env:
+      APP_SERVICE_NAME: ${{ vars.AZURE_APP_SERVICE_NAME }}
+      ACR_NAME: ${{ vars.AZURE_CONTAINER_REGISTRY_NAME }}
+      IMAGE_NAME: ${{ vars.CONTAINER_IMAGE_NAME || 'zavastorefront' }}
+      IMAGE_TAG: ${{ github.sha }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Azure Login (OIDC)
+        uses: azure/login@v2
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
+      - name: Resolve app and registry settings
+        uses: azure/cli@v2
+        with:
+          inlineScript: |
+            RESOURCE_GROUP=$(az webapp show --name "$APP_SERVICE_NAME" --query resourceGroup -o tsv)
+            ACR_LOGIN_SERVER=$(az acr show --name "$ACR_NAME" --query loginServer -o tsv)
+
+            echo "RESOURCE_GROUP=$RESOURCE_GROUP" >> "$GITHUB_ENV"
+            echo "ACR_LOGIN_SERVER=$ACR_LOGIN_SERVER" >> "$GITHUB_ENV"
+
+      - name: Build and push image
+        shell: bash
+        run: |
+          set -euo pipefail
+          az acr login --name "$ACR_NAME"
+
+          IMAGE_URI="$ACR_LOGIN_SERVER/$IMAGE_NAME:$IMAGE_TAG"
+          docker build -t "$IMAGE_URI" -f - . <<'EOF'
+          FROM mcr.microsoft.com/dotnet/sdk:6.0 AS build
+          WORKDIR /src
+          COPY ZavaStorefront.csproj ./
+          RUN dotnet restore
+          COPY . .
+          RUN dotnet publish -c Release -o /app/publish --no-restore
+
+          FROM mcr.microsoft.com/dotnet/aspnet:6.0
+          WORKDIR /app
+          COPY --from=build /app/publish .
+          EXPOSE 80
+          ENTRYPOINT ["dotnet", "ZavaStorefront.dll"]
+          EOF
+
+          docker push "$IMAGE_URI"
+          echo "IMAGE_URI=$IMAGE_URI" >> "$GITHUB_ENV"
+
+      - name: Deploy container image to App Service
+        uses: azure/cli@v2
+        with:
+          inlineScript: |
+            az webapp config container set \
+              --resource-group "$RESOURCE_GROUP" \
+              --name "$APP_SERVICE_NAME" \
+              --docker-custom-image-name "$IMAGE_URI" \
+              --docker-registry-server-url "https://$ACR_LOGIN_SERVER"
+
+            az webapp restart \
+              --resource-group "$RESOURCE_GROUP" \
+              --name "$APP_SERVICE_NAME"
