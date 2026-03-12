@@ -18,7 +18,7 @@ param acrSku string = 'Basic'
 param appServicePlanSku string = 'B1'
 
 @description('Linux runtime for App Service worker')
-param linuxFxVersion string = 'DOTNETCORE|6.0'
+param linuxFxVersion string = 'DOTNETCORE|10.0'
 
 @description('Container image repository in ACR')
 param imageRepository string = 'zavastorefront'
