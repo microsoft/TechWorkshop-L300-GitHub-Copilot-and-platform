@@ -29,7 +29,9 @@ if (!app.Environment.IsDevelopment())
     app.UseHsts();
 }
 
-app.UseHttpsRedirection();
+// Do not redirect to HTTPS inside the container — Container Apps ingress terminates TLS.
+// UseHttpsRedirection() would cause health probes (sent via HTTP to port 8080) to receive
+// a 301 redirect, making the Container App revision fail activation.
 app.UseStaticFiles();
 
 app.UseRouting();
