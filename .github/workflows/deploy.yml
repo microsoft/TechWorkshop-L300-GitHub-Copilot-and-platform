@@ -1,0 +1,44 @@
+name: Build and Deploy to Azure App Services Github Action
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  id-token: write
+  contents: read
+
+env:
+  IMAGE_REPO: zavastorefront
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Log in to Azure
+        uses: azure/login@v2
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
+      - name: Log in to ACR
+        run: az acr login --name ${{ vars.ACR_NAME }}
+
+      - name: Build and push container image
+        run: |
+          IMAGE="${{ vars.ACR_NAME }}.azurecr.io/${{ env.IMAGE_REPO }}:${{ github.sha }}"
+          docker build -t "$IMAGE" ./src
+          docker push "$IMAGE"
+
+      - name: Deploy to Azure Web App
+        uses: azure/webapps-deploy@v3
+        with:
+          app-name: ${{ vars.AZURE_WEBAPP_NAME }}
+          images: ${{ vars.ACR_NAME }}.azurecr.io/${{ env.IMAGE_REPO }}:${{ github.sha }}
