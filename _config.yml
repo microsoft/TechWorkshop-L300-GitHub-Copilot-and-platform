@@ -1,6 +1,9 @@
 title: GitHub - Innovate with GitHub
 description: This lab guides you through a series of practical exercises focused on modernising Zava's business applications and databases by migrating everything to Azure, leveraging GitHub Enterprise, Copilot, and Azure services.
-theme: just-the-docs
+remote_theme: just-the-docs/just-the-docs@v0.10.1
+
+plugins:
+  - jekyll-remote-theme
 
 # url: https://github.com/microsoft/TechWorkshop-L300-GitHub-Copilot-and-platform
 
